@@ -78,25 +78,6 @@ class Hexa:
         plt.plot(hx/pi,hy/pi, label='FBZ')
         plt.legend(loc='best')
 
-    @staticmethod
-    def overlay_unitcell():
-        """
-        Draw a hexagon. Rotated 30 degrees with respect to
-        real space Weigner-Seitz cell
-        """
-        s30 = np.sin(pi/6.)
-        s60 = np.sin(pi/3.)
-        c30 = np.cos(pi/6.)
-        c60 = np.cos(pi/3.)
-
-        # radious of imaginary circle enclosing the polygon
-        radi = pi/(c30**2)
-        hx = radi*np.array([c30, 0., -c30, -c30,  0.,  c30, c30])
-        hy = radi*np.array([s30, 1.,  s30, -s30, -1., -s30, s30])
-
-        plt.plot(hx/pi,hy/pi, label='Unit cell')
-        plt.legend(loc='best')
-
 
 class Tetra:
     """
@@ -194,7 +175,9 @@ def Ematrix_cuprate_three_band(kx,ky):
     return m;
 
 def Eband_cuprate_three_band(kx,ky,iband=1,em=Ematrix_cuprate_three_band):
-    "make energy bands"
+    """
+    make energy bands
+    """
     vl,vc = np.linalg.eig(em(kx,ky))
     vl = np.sort(vl)
     return vl[iband]
@@ -209,7 +192,9 @@ def make_Eall(X,Y,em):
     return Eall;
 
 def eband(kx,ky,iband,em):
-    "make energy bands"
+    """
+    make energy bands
+    """
     vl,vc = np.linalg.eig(em(kx,ky))
     vl = np.sort(vl)
     return vl[iband]
