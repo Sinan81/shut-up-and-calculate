@@ -27,18 +27,20 @@ x.plot_chi_vs_q()
 
 Plotting single band bare static charge susceptibility, $`\chi(q,\omega=0)`$ for a (qx,qy) grid of 32x32 takes about 3 minutes on an average laptop (with the procedural version of the code). This is largely thanks to python numba module. Otherwise the same calculation takes 30 times longer! Object oriented version is slower due to numba complications, requiring to turn off certain optimisations.
 
-# TO-DO
+# Coming Soon
 - A procedural version of this code will also be provided so that users can choose between OOP vs otherwise.
-- pytests will be added.
-- energy band cuts
+- pytests
 - Random Phase approximation (RPA)
 - Multiband susceptibility
-- Non-local interactions in RPA
+- Extended RPA (with ladder diagrams and non-local interactions)
 
 
 # Example Visuals: Three Band Cuprate Model
 
-![Energy bands](images/tetra/cuprate_three_band_energy_bands.png)
+<p float='left'>
+  <img src='images/tetra/cuprate_three_band_energy_bands.png', width=400>
+  <img src='images/tetra/cuprate_three_band_energy_band_cuts.png', width=400>
+</p>
 
 # Example Visuals: Single Band Cuprate Model
 

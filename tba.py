@@ -2,25 +2,27 @@
 
 # Tight binding approximation of solid state systems
 
-import numpy as np
-import pickle
-import scipy.integrate as integrate
+# builtin modules
 import time
-import matplotlib
-import matplotlib.pyplot as plt
+from multiprocessing import Pool
 import os
+import pickle
 import warnings
 
-from multiprocessing import Pool
-from pathos.multiprocessing import ProcessingPool as PPool
+# extras
 # numba results in 30x speed up!!!
 from numba import jit
 import numba
 from numpy import pi, sqrt
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+import scipy.integrate as integrate
+from scipy.integrate import dblquad
+import matplotlib
+import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from scipy.integrate import dblquad
+from mpl_toolkits.mplot3d import Axes3D
+from pathos.multiprocessing import ProcessingPool as PPool
 
 matplotlib.use("TkAgg")
 
@@ -83,6 +85,12 @@ class Tetra:
     """
     tetra crysctal specific stuff
     """
+
+    G = (0,0)
+    X = (pi,0)
+    M = (pi,pi)
+    sym_cuts = (G, X, M, G)
+
     def __init__(self):
         self.integ_xmin = 0.0
         self.integ_xmax = 2.0 * pi
@@ -166,7 +174,6 @@ def Ematrix_cuprate_three_band(kx,ky):
     t2 = 0.#25
     t3 = 0.
     ic = np.complex(0,1)
-    # put the tigh-binding Hamiltonian here.
     # 3-band case (Emery model for Cuprates)
     m = np.matrix([ [ ed, 2.*tpd*np.sin(kx/2.), -2.*tpd*np.sin(ky/2.) ],
                   [ 2.*tpd*np.sin(kx/2.), ex, -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.)],
@@ -219,11 +226,11 @@ list_of_models = [  cuprate_single_band.__name__,
                     cuprate_three_band.__name__]
 
 class System:
-    def __init__(self, model=cuprate_single_band):
+    def __init__(self, model=cuprate_single_band, filling=None):
         self.model = model
         self.crystal = model.crystal
         self.Eband1 = model.Eband
-        self.filling = 0.45
+        self.filling = filling if filling else model.rank-0.55
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chi = None # static susceptibility chi(omega=0,q)
         self.__name__ = model.__name__
@@ -405,6 +412,63 @@ class System:
             plt.savefig(self.__name__ + '_energy_bands.png')
         plt.show()
         return fig
+
+    def plot_bands_along_sym_cuts(self, isSaveFig=False):
+
+        veband = np.vectorize(self.Eband1)  # vectorize
+
+        ncuts = len(self.crystal.sym_cuts) - 1 # exclude duplicate points
+        fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
+        axlist = [ax1, ax2, ax3]
+
+        # make points along the cuts
+        for i in range(0, ncuts):
+            p1,p2 = self.crystal.sym_cuts[i:i+2]
+            lkx = np.linspace(p1[0], p2[0])
+            lky = np.linspace(p1[1], p2[1])
+            ax = axlist[i]
+            ax.axhline(self.eFermi, color='k', ls='--')
+            if self.model.rank == 1: # single band
+                Z = veband(lkx,lky)
+                ax.plot(Z)
+            else: # multi band
+                for nb in range(0,self.model.rank):
+                    Z   = veband(lkx,lky,nb)
+                    ax.plot(Z)
+
+            ax.set_ylim(-5,5)
+            ax.set_xlim(1,len(lkx)-1)
+            ax.set_xticks([len(lkx)/2],[])
+            # turn off yaxis ticks except for the first plot
+            if i != 0:
+                ax.set_yticks([],[])
+            if i == 0:
+                ax.set_ylabel('Energy (eV)')
+
+        # indicate symmetry point labels
+        fig.text(0.12, 0.075, 'G', fontweight='bold')
+        fig.text(0.38, 0.075, 'X', fontweight='bold')
+        fig.text(0.63, 0.075, 'M', fontweight='bold')
+        fig.text(0.89, 0.075, 'G', fontweight='bold')
+        # get rid of space between subplots
+        plt.subplots_adjust(wspace=0)
+        ttxt=' '.join(self.model.__name__.split('_'))
+        ttxt=ttxt +' (filling='+str(self.filling)+')'
+        fig.text(0.5,0.9, ttxt, horizontalalignment='center')
+        if isSaveFig:
+            plt.savefig(self.__name__ + '_energy_band_cuts.png')
+        plt.show()
+
+#        veband = np.vectorize(self.Eband1)  # vectorize
+#            Z = veband(xx, yy)
+#        else: # multi band
+#            for nb in range(0,self.model.rank):
+#                Z   = veband(xx,yy,nb)
+
+        plt.show()
+        return fig
+
+
 
     def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi, omega=None):
         """ calculate susceptibility.
