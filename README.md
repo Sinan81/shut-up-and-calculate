@@ -2,7 +2,15 @@ This project is about plotting various standard properties of 2-dimensional tigh
 
 Keywords: computational condensed matter physics, Fermi surface, tight binding approximation, energy bands, cuprates, two-dimensional systems, many body physics
 
-# Sample Run
+# Create a virtual python environment
+
+Due to tkinter dependency for plotting, using a conda environment is preferred. Install miniconda: https://docs.conda.io/en/latest/miniconda.html Then create a conda environment like:
+```
+conda env create -f ./conda_environment.yml
+conda env activate fermi
+```
+
+# Usage
 
 ```python
 import warnings
