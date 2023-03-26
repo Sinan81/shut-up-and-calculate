@@ -23,7 +23,9 @@ Plotting single band bare static charge susceptibility, $`\chi(q,\omega=0)`$ for
 - A procedural version of this code will also be provided so that users can choose between OOP vs otherwise.
 - pytests will be added.
 - energy band cuts
-- Random Phase approximation (i.e. identify peaks in susceptibility, calculate critical interaction strength, and phase boundaries)
+- Random Phase approximation (RPA)
+- Multiband susceptibility
+- Non-local interactions in RPA
 
 
 # Example Visuals: Three Band Cuprate Model
