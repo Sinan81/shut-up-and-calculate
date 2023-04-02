@@ -89,7 +89,7 @@ class Tetra:
     G = (0,0)
     X = (pi,0)
     M = (pi,pi)
-    sym_cuts = (G, X, M, G)
+    sym_cuts = ( (G,X), (X,M), (M,G))
 
     def __init__(self):
         self.integ_xmin = 0.0
@@ -233,6 +233,7 @@ class System:
         self.filling = filling if filling else model.rank-0.55
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chi = None # static susceptibility chi(omega=0,q)
+        self.chi_cuts = None
         self.__name__ = model.__name__
 
     def get_default_eband(self):
@@ -417,13 +418,13 @@ class System:
 
         veband = np.vectorize(self.Eband1)  # vectorize
 
-        ncuts = len(self.crystal.sym_cuts) - 1 # exclude duplicate points
+        ncuts = len(self.crystal.sym_cuts) # exclude duplicate points
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
         axlist = [ax1, ax2, ax3]
 
         # make points along the cuts
         for i in range(0, ncuts):
-            p1,p2 = self.crystal.sym_cuts[i:i+2]
+            p1,p2 = self.crystal.sym_cuts[i]
             lkx = np.linspace(p1[0], p2[0])
             lky = np.linspace(p1[1], p2[1])
             ax = axlist[i]
@@ -452,19 +453,81 @@ class System:
         fig.text(0.89, 0.075, 'G', fontweight='bold')
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
+        # set figure title
         ttxt=' '.join(self.model.__name__.split('_'))
         ttxt=ttxt +' (filling='+str(self.filling)+')'
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:
             plt.savefig(self.__name__ + '_energy_band_cuts.png')
         plt.show()
+        return fig
 
-#        veband = np.vectorize(self.Eband1)  # vectorize
-#            Z = veband(xx, yy)
-#        else: # multi band
-#            for nb in range(0,self.model.rank):
-#                Z   = veband(xx,yy,nb)
 
+    def _calc_chi_cuts(self,ncuts,num):
+        if not self.chi_cuts:
+            Zcuts = []
+            # make points along the cuts
+            for i in range(0, ncuts):
+                p1,p2 = self.crystal.sym_cuts[i]
+                lkx = np.linspace(p1[0], p2[0], num=num)
+                lky = np.linspace(p1[1], p2[1], num=num)
+                if self.model.rank == 1: # single band
+                    # now zip X,Y so that we can use pool
+                    _xy = list(zip(lkx, lky))
+                    # multiprocess pools doesn't work with class methods
+                    # hence use PPool from pathos module
+                    tic = time.perf_counter()
+                    with PPool(npool) as p:
+                        Z = p.map(self.real_chi_static, _xy)
+                    Zcuts.append(Z)
+                    toc = time.perf_counter()
+                    print(f"run time: {toc - tic:.1f} seconds")
+                else: # multi band
+                    print('multi band chi not implemented yet')
+            self.chi_cuts = Zcuts
+
+    def _plot_individual_chi_cuts(self,ncuts,num,axlist):
+        # plot
+        for i in range(0, ncuts):
+            ax = axlist[i]
+            if self.model.rank == 1: # single band
+                ax.plot(self.chi_cuts[i], marker='o')
+            else: # multi band
+                print('multi band chi not implemented yet')
+
+            ax.set_ylim(0,1)
+            ax.set_xlim(0,num-1)
+            ax.set_xticks([(num-1)/2],[])
+            # turn off yaxis ticks except for the first plot
+            if i != 0:
+                ax.set_yticks([],[])
+            if i == 0:
+                ax.set_ylabel('Intensity (unitless)')
+
+
+
+    def plot_chi_along_sym_cuts(self, isSaveFig=False, num=3):
+
+        ncuts = len(self.crystal.sym_cuts) # exclude duplicate points
+        fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
+        axlist = [ax1, ax2, ax3]
+
+        self._calc_chi_cuts(ncuts,num)
+        self._plot_individual_chi_cuts(ncuts,num,axlist)
+
+        # indicate symmetry point labels
+        fig.text(0.12, 0.075, 'G', fontweight='bold')
+        fig.text(0.38, 0.075, 'X', fontweight='bold')
+        fig.text(0.63, 0.075, 'M', fontweight='bold')
+        fig.text(0.89, 0.075, 'G', fontweight='bold')
+        # get rid of space between subplots
+        plt.subplots_adjust(wspace=0)
+        # set figure title
+        ttxt=' '.join(self.model.__name__.split('_'))
+        ttxt='Bare susceptibility of '+ttxt +' (filling='+"{:.2f}".format(self.filling)+')'
+        fig.text(0.5,0.9, ttxt, horizontalalignment='center')
+        if isSaveFig:
+            plt.savefig(self.__name__ + '_chi_cuts.png')
         plt.show()
         return fig
 
