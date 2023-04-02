@@ -414,12 +414,52 @@ class System:
         plt.show()
         return fig
 
-    def plot_bands_along_sym_cuts(self, isSaveFig=False):
+    def histogram_of_states(self,Nk=1000,Nbin=100,ax=None,iband=None,plot_Emin=-5,plot_Emax=5,isSaveFig=False):
+        """
+        Calculate densitity of states (DOS) via histogram of energies
+        """
+
+        cell = self.crystal
+        dk = 2*pi/Nk
+        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
+        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
+        Nk = X.size*Y.size
+
+
+        if self.model.rank == 1:
+            Eall = self.make_Eall1(X,Y)
+        else: # multi band
+            Eall = make_Eall(X,Y,self.model.Ematrix)
+
+        if iband == None:
+            eflat = Eall[iband].flatten() # plt.hist needs a flat array it seems
+        else:
+            eflat = Eall.flatten() # plt.hist needs a flat array it seems
+
+        if ax: # plotting alongside 3d cuts
+            ax.axhline(self.eFermi, color='k', ls='--')
+            ax.title.set_text('HoS')
+            n, bins, patches = ax.hist(eflat, bins=Nbin, density=True, orientation='horizontal')
+            ax.set_ylim(plot_Emin,plot_Emax)
+            ax.set_yticks([],[])
+            ax.set_xticks([],[])
+        else: # regular plot
+            n, bins, patches = plt.hist(eflat, bins=Nbin, density=True)
+            plt.xlabel('Energy levels')
+            plt.ylabel('Histogram')
+            plt.title('Histogram of states')
+            if isSaveFig:
+                plt.savefig(self.__name__ + '_histogram_of_states.png')
+            plt.show()
+
+
+    def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False):
 
         veband = np.vectorize(self.Eband1)  # vectorize
 
-        ncuts = len(self.crystal.sym_cuts) # exclude duplicate points
-        fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
+        ncuts = len(self.crystal.sym_cuts)
+        nplots = ncuts + 1 if withdos or withhos else ncuts
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1,nplots)
         axlist = [ax1, ax2, ax3]
 
         # make points along the cuts
@@ -446,16 +486,25 @@ class System:
             if i == 0:
                 ax.set_ylabel('Energy (eV)')
 
+        if withhos:
+            self.histogram_of_states(ax=ax4)
+            xg=0.12 ; xx=0.31 ; xm=0.50 ; xgg=0.70
+        elif withdos:
+            # not implemented yet
+            pass
+        else:
+            xg=0.12 ; xx=0.38 ; xm=0.63 ; xgg=0.89
         # indicate symmetry point labels
-        fig.text(0.12, 0.075, 'G', fontweight='bold')
-        fig.text(0.38, 0.075, 'X', fontweight='bold')
-        fig.text(0.63, 0.075, 'M', fontweight='bold')
-        fig.text(0.89, 0.075, 'G', fontweight='bold')
+        fig.text(xg, 0.075, 'G', fontweight='bold')
+        fig.text(xx, 0.075, 'X', fontweight='bold')
+        fig.text(xm, 0.075, 'M', fontweight='bold')
+        fig.text(xgg, 0.075, 'G', fontweight='bold')
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
         ttxt=' '.join(self.model.__name__.split('_'))
-        ttxt=ttxt +' (filling='+str(self.filling)+')'
+        tfill=' (filling='+"{:.2f}".format(self.filling)+')'
+        ttxt=ttxt + tfill
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:
             plt.savefig(self.__name__ + '_energy_band_cuts.png')
