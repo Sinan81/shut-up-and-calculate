@@ -458,8 +458,12 @@ class System:
         veband = np.vectorize(self.Eband1)  # vectorize
 
         ncuts = len(self.crystal.sym_cuts)
-        nplots = ncuts + 1 if withdos or withhos else ncuts
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1,nplots)
+        if withdos or withhos:
+            nplots = ncuts + 1
+            fig, (ax1, ax2, ax3, ax4) = plt.subplots(1,nplots)
+        else:
+            nplots = ncuts
+            fig, (ax1, ax2, ax3) = plt.subplots(1,nplots)
         axlist = [ax1, ax2, ax3]
 
         # make points along the cuts
