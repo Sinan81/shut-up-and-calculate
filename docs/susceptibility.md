@@ -48,7 +48,7 @@ x.plot_chi_vs_q(Nq=10,style='topview') # plot res Nq by Nq
 # surface plot option is also available
 ```
 <p float='left'>
- <img src='images/tetra/cuprate_single_band_susceptibility_fill040_64x64.png'/>
+ <img src='/images/tetra/cuprate_single_band_susceptibility_fill040_64x64.png'/>
 </p>
 
 
@@ -70,7 +70,7 @@ giving
 
 
 <p float='left'>
- <img src='images/tetra/cuprate_single_band_susceptibility_cuts.png' />
+ <img src='/images/tetra/cuprate_single_band_susceptibility_cuts.png' />
 </p>
 
 As shown above, $\chi_0$ peak occurs along a diagonal cut from $X\rightarrow M$ or ($Y\rightarrow M$). This is a result of (i) nesting and (ii) the fact that electron density or filling is below the so-called van-Hove filling $p_{vH}$ where high-intensity arcs cross along $X\rightarrow M$ or equivalent cuts.
@@ -84,6 +84,6 @@ When different pieces of high-intesity curvature in the extended zone are folded
 These qualitative considerations are depicted in the below animation (refresh page or click to replay).
 
 <p float='left'>
- <img src='images/tetra/origin_of_susceptibility_arcs.gif' width="400" />
- <img src='images/tetra/origin_of_susceptibility_arcs_final.png' width="400" />
+ <img src='/images/tetra/origin_of_susceptibility_arcs.gif' width="400" />
+ <img src='/images/tetra/origin_of_susceptibility_arcs_final.png' width="400" />
 </p>
