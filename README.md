@@ -2,6 +2,8 @@ This project is about plotting various standard properties of 2-dimensional tigh
 
 Keywords: computational condensed matter physics, Fermi surface, tight binding approximation, energy bands, cuprates, two-dimensional systems, many body physics
 
+"Shut up and calculate!" Richard Feynman
+
 # Create a virtual python environment
 
 Due to tkinter dependency for plotting, using a conda environment is preferred. Install miniconda: https://docs.conda.io/en/latest/miniconda.html Then create a conda environment like:
@@ -23,9 +25,14 @@ x.plot_Fermi_surface_contour()
 x.filling_vs_E1()
 x.plot_chi_vs_q()
 ```
-# Performance
 
-Plotting single band bare static charge susceptibility, $`\chi(q,\omega=0)`$ for a (qx,qy) grid of 32x32 takes about 3 minutes on an average laptop (with the procedural version of the code). This is largely thanks to python numba module. Otherwise the same calculation takes 30 times longer! Object oriented version is slower due to numba complications, requiring to turn off certain optimisations.
+# References
+The following references are recommended for topics discussed in this repository:
+* Piers Coleman, Introduction to Many Body Physics, 2015, Cambridge University Press
+* Ashcroft & Mermin, Solid State Physics
+
+# List of Topics
+[Susceptibility](docs/susceptibility.md)
 
 # Coming Soon
 - A procedural version of this code will also be provided so that users can choose between OOP vs otherwise.
