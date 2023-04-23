@@ -159,6 +159,53 @@ def Eband1_cuprate(kx, ky):
     )
     return band
 
+
+def Ematrix_LCO_four_band(kx,ky):
+    """
+    make energy matrix for LaCuO4
+    """
+    # Reference:
+    # Unified description of cuprate superconductors using four-band d-p model
+    # https://arxiv.org/abs/2105.11664
+    t1 = 1.42
+    t2 = 0.61
+    t3 = 0.07
+    t4 = 0.65
+    t5 = 0.05
+    t6 = 0.07
+    eps_dx2y2 = -0.87
+    eps_dz = -0.11
+    eps_px = -3.13
+    eps_py = -3.13
+
+    ic = np.complex(0,1)
+    t11 = eps_dx2y2
+    t21 = 0
+    t22 = eps_dz -2*t5*(np.cos(kx) + np.cos(ky) )
+    t31 = 2*ic*t1*np.sin(kx/2)
+    t32 = -2*ic*t4*np.sin(kx/2)
+    t33 = eps_px + 2*t3*np.cos(kx) + 2*t6*( np.cos(kx+ky) + np.cos(kx - ky) )
+    t41 = -2*ic*t1*np.sin(ky/2)
+    t42 = -2*ic*t4*np.sin(ky/2)
+    t43 = 2*t2*( np.cos( (kx+ky)/2 ) - np.cos( (kx-ky)/2 ) )
+    t44 = eps_py + 2*t3*np.cos(ky) + 2*t6*(np.cos(kx + ky) + np.cos(kx-ky) )
+
+    m = np.matrix([ [ t11, np.conj(t21),  np.conj(t31), np.conj(t41) ],
+                  [ t21, t22,           np.conj(t32), np.conj(t42) ],
+                  [ t31, t32,           t33,          np.conj(t43) ],
+                  [ t41, t42,           t43,            t44        ]
+                ])
+    return m;
+
+def Eband_LCO_four_band(kx,ky,iband=1,em=Ematrix_LCO_four_band):
+    """
+    make energy bands
+    """
+    vl,vc = np.linalg.eig(em(kx,ky))
+    vl = np.sort(vl)
+    return vl[iband]
+
+
 def Ematrix_cuprate_three_band(kx,ky):
     """
     make energy matrix
@@ -231,6 +278,7 @@ class Model:
 cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
 hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
 cuprate_three_band = Model(Eband_cuprate_three_band, Tetra(), 'cuprate_three_band', 3, Ematrix_cuprate_three_band)
+cuprate_four_band_LCO = Model(Eband_LCO_four_band, Tetra(), 'cuprate_four_band_LCO', 4, Ematrix_LCO_four_band)
 
 list_of_models = [  cuprate_single_band.__name__,
                     hexa_single_band.__name__,
@@ -529,7 +577,7 @@ class System:
             plt.show()
 
 
-    def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False):
+    def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5):
 
         veband = np.vectorize(self.Eband1)  # vectorize
 
@@ -557,7 +605,7 @@ class System:
                     Z   = veband(lkx,lky,nb)
                     ax.plot(Z)
 
-            ax.set_ylim(-5,5)
+            ax.set_ylim(plot_Emin,plot_Emax)
             ax.set_xlim(1,len(lkx)-1)
             ax.set_xticks([len(lkx)/2],[])
             # turn off yaxis ticks except for the first plot
@@ -567,7 +615,7 @@ class System:
                 ax.set_ylabel('Energy (eV)')
 
         if withhos:
-            self.histogram_of_states(ax=ax4)
+            self.histogram_of_states(ax=ax4,plot_Emin=plot_Emin,plot_Emax=plot_Emax)
             xg=0.12 ; xx=0.31 ; xm=0.50 ; xgg=0.70
         elif withdos:
             print('DoS plot beside energy cuts is not working yet')
