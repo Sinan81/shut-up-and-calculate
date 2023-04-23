@@ -189,14 +189,25 @@ def Eband_cuprate_three_band(kx,ky,iband=1,em=Ematrix_cuprate_three_band):
     vl = np.sort(vl)
     return vl[iband]
 
-def make_Eall(X,Y,em):
-    vl,vc = np.linalg.eig(em(0.,1.))
-    Eall = np.zeros((vl.size,X.size,Y.size));
-    for ib in range(0,vl.size):
-        # only vectorize first three arguments of 'eband'
-        veband = np.vectorize(eband, excluded=['em'])
-        Eall[ib,:,:] = veband(X,Y,ib,em=em)
-    return Eall;
+def make_Eall(X,Y,func_em):
+    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
+    Eall  = np.zeros((vl.size, X.size*Y.size));
+    Evecs = np.zeros((vl.size**2, X.size*Y.size));
+    # These naive for loops should be replaced with a more performant logic
+    # While numpy vectorize worked nicely for getting eigenvalues (one band at a time!)
+    # It caused complications in terms of getting eigenvectors as well.
+    # TODO:
+    # - Try numpy vectorize with function signature
+    # - try parallellizing with multiprocess map
+    # - try using numba
+    i = 0
+    for kx in X:
+        for ky in Y:
+            vl,vc = np.linalg.eig(func_em(kx,ky))
+            Eall[:,i] = vl
+            Evecs[:,i] = vc.flatten()
+            i = i +1
+    return Eall
 
 def eband(kx,ky,iband,em):
     """
@@ -298,6 +309,7 @@ class System:
             Emax = Eall.max()
         else:
             Eall = make_Eall(X,Y, self.model.Ematrix)
+            Eall = np.sort(Eall)
             Emin = Eall.min()
             Emax = Eall.max()
 
@@ -335,7 +347,7 @@ class System:
 
         veband = np.vectorize(self.Eband1)
         Z = veband(xx, yy)
-        plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
 
         ax.set_xlim(kmin/pi, kmax/pi)
         ax.set_ylim(kmin/pi, kmax/pi)
@@ -356,6 +368,14 @@ class System:
         if isSaveFig:
             plt.savefig(self.__name__ + "_fermi_surface.png")
         plt.show()
+
+        for item in cs.collections:
+            for i in item.get_paths():
+                v = i.vertices
+                cx = v[:,0]
+                cy = v[:,1]
+        return cx,cy
+
 
     def plot_bands1(self, style='surf', isSaveFig=False, kmin=-pi, kmax=pi):
 
@@ -392,6 +412,7 @@ class System:
             else:
                 pass
         else:
+            fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
             for nb in range(0,self.model.rank):
                 Z   = veband(xx,yy,nb)
                 surf = ax.plot_surface(xx/pi, yy/pi, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
@@ -430,15 +451,16 @@ class System:
             Eall = self.make_Eall1(X,Y)
         else: # multi band
             Eall = make_Eall(X,Y,self.model.Ematrix)
+            Eall.flatten()
 
-        if iband == None:
+        if iband != None:
             eflat = Eall[iband].flatten() # plt.hist needs a flat array it seems
         else:
             eflat = Eall.flatten() # plt.hist needs a flat array it seems
 
         if ax: # plotting alongside 3d cuts
             ax.axhline(self.eFermi, color='k', ls='--')
-            ax.title.set_text('HoS')
+            ax.title.set_text('DoS')
             n, bins, patches = ax.hist(eflat, bins=Nbin, density=True, orientation='horizontal')
             ax.set_ylim(plot_Emin,plot_Emax)
             ax.set_yticks([],[])
@@ -448,6 +470,60 @@ class System:
             plt.xlabel('Energy levels')
             plt.ylabel('Histogram')
             plt.title('Histogram of states')
+            if isSaveFig:
+                plt.savefig(self.__name__ + '_histogram_of_states.png')
+            plt.show()
+
+    def density_of_states(self,Nk=200, gamma=0.02, ax=None, iband=None, plot_Emin=-5, plot_Emax=5, isSaveFig=False):
+        """
+        Calculate densitity of states (DOS) via histogram of energies
+        """
+
+        cell = self.crystal
+        dk = 2*pi/Nk
+        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
+        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
+        Nk = X.size*Y.size
+
+
+        if self.model.rank == 1:
+            Eall = self.make_Eall1(X,Y)
+        else: # multi band
+            Eall = make_Eall(X,Y,self.model.Ematrix)
+            Eall.flatten()
+
+        if iband != None:
+            eflat = Eall[iband].flatten() # plt.hist needs a flat array it seems
+        else:
+            eflat = Eall.flatten() # plt.hist needs a flat array it seems
+
+        Nw = int((plot_Emax-plot_Emin)/gamma)
+        ados = np.zeros(Nw)
+        i = 0
+        aomg = np.linspace(plot_Emin,plot_Emax,Nw) # freq array
+        for omg in aomg:
+            dos = 0
+            for Ek in eflat:
+                dos = dos + gamma/( (Ek-omg)**2 + gamma**2 )
+            ados[i] = dos/Nk/np.pi
+            i = i + 1
+
+        if ax: # plotting alongside 3d cuts
+            ax.axhline(self.eFermi, color='k', ls='--')
+            ax.title.set_text('DoS')
+            # TODO
+            # plt doesn't have orientation attribute unlike hist plot
+            # somehow this needs to be fixed
+            # transform trick didn't work
+            ax.plot(aomg, ados)
+            ax.set_ylim(plot_Emin,plot_Emax)
+            ax.set_yticks([],[])
+            ax.set_xticks([],[])
+        else: # regular plot
+            plt.plot(aomg, ados)
+            plt.xlabel('Energy levels')
+            plt.ylabel('Intensity')
+            plt.title('Density of states')
             if isSaveFig:
                 plt.savefig(self.__name__ + '_histogram_of_states.png')
             plt.show()
@@ -494,7 +570,13 @@ class System:
             self.histogram_of_states(ax=ax4)
             xg=0.12 ; xx=0.31 ; xm=0.50 ; xgg=0.70
         elif withdos:
-            # not implemented yet
+            print('DoS plot beside energy cuts is not working yet')
+            print('use withhos=True instead')
+            # TODO
+            # we aren't able to change the orientation of
+            # of DoS plot
+            #self.density_of_states(ax=ax4)
+            #xg=0.12 ; xx=0.31 ; xm=0.50 ; xgg=0.70
             pass
         else:
             xg=0.12 ; xx=0.38 ; xm=0.63 ; xgg=0.89
@@ -683,13 +765,13 @@ class System:
         calculates filling for a given Fermi level E0
         uses global variables Eall, Nk
         """
-        #vfermi = np.vectorize(self.fermiDist)
-        #vfermi = self.fermiDist
+        # Eall must be a flat, 1D, numpy array.
+        # A given Eall matrix should be flattened as: Eall.flatten()
         if self.model.rank == 1:
             return sum(sum(self.fermiDist(Eall-E0)))/float(Nk)
         else:
             vfermi = np.vectorize(self.fermiDist)
-            return sum(sum(sum(vfermi(Eall-E0))))/float(Nk)
+            return sum(sum(vfermi(Eall-E0)))/float(Nk)
 
 
     @staticmethod
@@ -730,6 +812,7 @@ class System:
             fig.colorbar(c, ax=ax)
         elif style == 'surf':
             # surface plot
+            fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
             surf = ax.plot_surface(
                 X, Y, Z, rstride=1,
                 cstride=1, cmap=cm.coolwarm,
@@ -756,6 +839,7 @@ class System:
         #        pickle.dump([fig], f)
 
         return plt
+
 
 if __name__ == "__main__":
     # supress all warnings. Advanced users might want to undo this.
