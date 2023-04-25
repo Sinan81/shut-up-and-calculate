@@ -570,13 +570,13 @@ class System:
             eflat = Eall[iband].flatten() # plt.hist needs a flat array it seems
         else:
             eflat = Eall.flatten() # plt.hist needs a flat array it seems
+
         fast=True
         if fast==True:
+            # Use binning or histograms to exponentially speed up DoS calculation
             orb_wgt=False
-            # TODO get rid of naive for loops
-            # make it faster
             Nw = int((plot_Emax-plot_Emin)/gamma)
-            nedge = Nw*2
+            nedge = Nw*3 # even 2x Nw seems to be sufficient
             hist,edges = np.histogram(eflat, nedge)
             dE = edges[1]-edges[0]
             nhist = sum(hist)
