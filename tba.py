@@ -256,6 +256,27 @@ def make_Eall(X,Y,func_em):
             i = i +1
     return Eall
 
+def get_Evecs(X,Y,func_em):
+    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
+    Eall  = np.zeros((vl.size, X.size*Y.size));
+    Evecs = np.zeros((vl.size**2, X.size*Y.size));
+    # These naive for loops should be replaced with a more performant logic
+    # While numpy vectorize worked nicely for getting eigenvalues (one band at a time!)
+    # It caused complications in terms of getting eigenvectors as well.
+    # TODO:
+    # - Try numpy vectorize with function signature
+    # - try parallellizing with multiprocess map
+    # - try using numba
+    i = 0
+    for kx in X:
+        for ky in Y:
+            vl,vc = np.linalg.eig(func_em(kx,ky))
+            Eall[:,i] = vl
+            Evecs[:,i] = vc.flatten()
+            i = i +1
+    return Evecs
+
+
 def eband(kx,ky,iband,em):
     """
     make energy bands
@@ -522,10 +543,14 @@ class System:
                 plt.savefig(self.__name__ + '_histogram_of_states.png')
             plt.show()
 
-    def density_of_states(self,Nk=200, gamma=0.02, ax=None, iband=None, plot_Emin=-5, plot_Emax=5, isSaveFig=False):
+    def density_of_states(self,Nk=200, gamma=0.02, ax=None, iband=None, plot_Emin=-5, plot_Emax=5, isSaveFig=False, orb_wgt=False, fast=True):
         """
         Calculate densitity of states (DOS) via histogram of energies
         """
+        if orb_wgt and fast:
+            print("Warning: orb_wgt isn't implemented within the fast algoritm")
+            print("Disabling fast algorithm")
+            fast = False
 
         cell = self.crystal
         dk = 2*pi/Nk
@@ -539,22 +564,59 @@ class System:
         else: # multi band
             Eall = make_Eall(X,Y,self.model.Ematrix)
             Eall.flatten()
+            Evecs = get_Evecs(X,Y,self.model.Ematrix)
 
         if iband != None:
             eflat = Eall[iband].flatten() # plt.hist needs a flat array it seems
         else:
             eflat = Eall.flatten() # plt.hist needs a flat array it seems
-
-        Nw = int((plot_Emax-plot_Emin)/gamma)
-        ados = np.zeros(Nw)
-        i = 0
-        aomg = np.linspace(plot_Emin,plot_Emax,Nw) # freq array
-        for omg in aomg:
-            dos = 0
-            for Ek in eflat:
-                dos = dos + gamma/( (Ek-omg)**2 + gamma**2 )
-            ados[i] = dos/Nk/np.pi
-            i = i + 1
+        fast=True
+        if fast==True:
+            orb_wgt=False
+            # TODO get rid of naive for loops
+            # make it faster
+            Nw = int((plot_Emax-plot_Emin)/gamma)
+            nedge = Nw*2
+            hist,edges = np.histogram(eflat, nedge)
+            dE = edges[1]-edges[0]
+            nhist = sum(hist)
+            ados = np.zeros(Nw)
+            ados_orb = np.zeros((self.model.rank,Nw))
+            iw = 0
+            aomg = np.linspace(plot_Emin,plot_Emax,Nw) # freq array
+            for omg in aomg:
+                dos = 0
+                for ik in range(edges.size-1):
+                    Ek = edges[ik]
+                    delta = gamma/( (Ek-omg)**2 + gamma**2 )
+                    dos = dos + delta*dE*hist[ik]
+                ados[iw] = dos/nedge/np.pi
+                iw = iw + 1
+        else:
+            # TODO get rid of naive for loops
+            # make it faster
+            Nw = int((plot_Emax-plot_Emin)/gamma)
+            ados = np.zeros(Nw)
+            ados_orb = np.zeros((self.model.rank,Nw))
+            iw = 0
+            aomg = np.linspace(plot_Emin,plot_Emax,Nw) # freq array
+            for omg in aomg:
+                dos = 0
+                for ik in range(Nk):
+                    Evals = Eall[:,ik]
+                    Evecmat = Evecs[:,ik].reshape(3,3)
+                    # loop over each eigen val and vec
+                    for il in range(self.model.rank):
+                        Ek = Evals[il]
+                        Evec = Evecmat[:,il]
+                        delta = gamma/( (Ek-omg)**2 + gamma**2 )
+                        # loop over each orbital
+                        for iorb in range(self.model.rank):
+                            ados_orb[iorb,iw] = ados_orb[iorb,iw] + np.linalg.norm(Evec[iorb])*delta
+                        dos = dos + delta
+                ados[iw] = dos/Nk/np.pi
+                ados_orb[:,iw] = ados_orb[:,iw]/Nk/np.pi
+                iw = iw + 1
 
         if ax: # plotting alongside 3d cuts
             ax.axhline(self.eFermi, color='k', ls='--')
@@ -569,6 +631,15 @@ class System:
             ax.set_xticks([],[])
         else: # regular plot
             plt.plot(aomg, ados)
+            # also plot DoS contribution by each orbital
+            if orb_wgt:
+                #marker = itertools.cycle(('.','+', 'o', '*'))
+                for iorb in range(self.model.rank):
+                    if self.model.__name__ == 'cuprate_three_band' and iorb == 2:
+                        plt.plot(aomg,ados_orb[iorb,:],marker='+',linestyle='')
+                        plt.legend(['Total','Cu-d', 'O-px', 'O-py'])
+                    else:
+                        plt.plot(aomg,ados_orb[iorb,:])
             plt.xlabel('Energy levels')
             plt.ylabel('Intensity')
             plt.title('Density of states')
@@ -576,6 +647,7 @@ class System:
                 plt.savefig(self.__name__ + '_histogram_of_states.png')
             plt.show()
 
+        return aomg,ados,ados_orb
 
     def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5):
 
