@@ -1,6 +1,6 @@
 # Energy Bands Etc.
 
-Building on the definitions provided in [Notation Basics](docs/basics.md) section, a non-interating Hamiltonian is given by:
+Building on the definitions provided in [Notation Basics](/docs/basics.md) section, a non-interating Hamiltonian is given by:
 
 $$ \hat H_0 = \sum_{i,\sigma} \epsilon_i \hat n_{i,\sigma} + \sum_{ij\sigma} t_{ij} \hat c_{i\sigma} ^\dagger \hat c_{i\sigma} $$
 
