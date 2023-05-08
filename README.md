@@ -32,7 +32,9 @@ The following references are recommended for topics discussed in this repository
 * Ashcroft & Mermin, Solid State Physics
 
 # List of Topics
-[Notation basics](docs.basics.md)
+
+[Notation basics](docs/basics.md)
+
 [Susceptibility](docs/susceptibility.md)
 
 # Coming Soon
