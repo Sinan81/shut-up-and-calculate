@@ -18,5 +18,5 @@ $$\hat c_{i}^\dagger = \frac{1}{\sqrt{N}} \sum_{\mathbf k} e^{-\mathbf k\cdot \m
 
 $$\hat c_{\mathbf k}^\dagger = \frac{1}{\sqrt{N}} \sum_{i} e^{\mathbf k\cdot \mathbf R_{i} } \hat c_{i}^\dagger$$
 
-where $\mathbf k = k_x \hat x + k_y \hat y$ is the momentum vector, $\mathbf R_i = x \hat x + y \hat y$ is the position vector of $i$th unit cell, and $N$ is the number of unit-cells in the system.
+where $\mathbf k = k_x \hat x + k_y \hat y$ is the momentum vector, $\mathbf R_i = x \hat x + y \hat y$ is the position vector of *i* th unit cell, and $N$ is the number of unit-cells in the system.
 
