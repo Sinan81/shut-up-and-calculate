@@ -35,6 +35,8 @@ The following references are recommended for topics discussed in this repository
 
 [Notation basics](docs/basics.md)
 
+[Energy bands, Fermi Surface etc](docs/bands.md)
+
 [Susceptibility](docs/susceptibility.md)
 
 # Coming Soon
