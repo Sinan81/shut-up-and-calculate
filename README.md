@@ -47,25 +47,12 @@ The following references are recommended for topics discussed in this repository
 - Extended RPA (with ladder diagrams and non-local interactions)
 
 
-# Example Visuals: Three Band Cuprate Model
+# Example Visuals
 
 <p float='left'>
   <img src='images/tetra/cuprate_three_band_energy_bands.png', width=400>
   <img src='images/tetra/cuprate_three_band_energy_band_cuts.png', width=400>
-</p>
-
-# Example Visuals: Single Band Cuprate Model
-
-<p float="left">
-  <img src="images/tetra/cuprate_single_band_energy_bands.png" width="400" />
-  <img src="images/tetra/cuprate_single_band_filling_vs_fermi_level.png" width="400" />
   <br>
-  <img src="images/tetra/cuprate_single_band_fermi_surface.png" width="400" />
+  <img src='images/hexa/hexa_single_band_fermi_surface.png', width=400>
   <img src="images/tetra/cuprate_single_band_susceptibility.png" width="400" />
 </p>
-
-
-# Example Visuals: Single Band Hexa System
-
-![Fermi "surface"](images/hexa/hexa_single_band_fermi_surface.png)
-
