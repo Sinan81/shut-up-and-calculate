@@ -68,9 +68,6 @@ One can also do: "x.plot_bands_along_sym_cuts(withhos=True)" to plot density of 
 
 Many properties of a solid state system is determined by the so called Fermi surface, hence one can plot this as:
 ```python
-
-The energy band(s) can be plotted via:
-```python
 from tba import *
 x = System()
 x.plot_Fermi_surface_contour()
