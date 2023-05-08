@@ -53,7 +53,7 @@ x.plot_bands1()
 ```
 giving
 
-![Single band cuprate](images/tetra/cuprate_single_band_energy_bands.png)
+![Single band cuprate](/images/tetra/cuprate_single_band_energy_bands.png)
 
 It's often convenient to instead look at energy bands along certain 3D cuts:
 ```python
@@ -62,7 +62,7 @@ x = System(model=cuprate_three_band)
 x.plot_bands_along_sym_cuts()
 ```
 
-![](images/tetra/cuprate_three_band_energy_band_cuts.png)
+![](/images/tetra/cuprate_three_band_energy_band_cuts.png)
 
 One can also do: "x.plot_bands_along_sym_cuts(withhos=True)" to plot density of states along side the energy band cuts plot.
 
@@ -77,6 +77,6 @@ x.plot_Fermi_surface_contour()
 ```
 where default filling is number of orbitals minus 0.4. Other filling can be specified by passing filling option. Hence, for single band cuprate system the Fermi surface is:
 
-![Single band cuprate](images/tetra/cuprate_single_band_fermi_surface.png)
+![](/images/tetra/cuprate_single_band_fermi_surface.png)
 
 By default, the Fermi surface is plotted in the extended zone with First Brilloin Zone is indicated. These can customized by passing relevant options as can been seen in the source code.
