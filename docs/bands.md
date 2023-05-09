@@ -36,7 +36,7 @@ we obtain
 
 It's instructive to calculate $t(\mathbf k)$ for the simple case of single-band system with nearest neighbour only tunneling. Along $x$ dimension, for a given site a particle can tunnel to the left ($R = \hat x$ ) and right ($R= - \hat x$) with magnitude $t$. Accordingly:
 ```math
-t_x(\mathbf k) =  \sum_{\mathbf R} t(\mathbf R) e^{i\mathbf k \cdot \mathbf R} = te^{i \hat x \cdot \mathbf k} + te^{i (-\hat x) \cdot \mathbf k} = t(e^{ik_x} + e^{-ik_x}) = 2t\cos(k_x)
+t_x(\mathbf k) =  \sum_{\mathbf R} t(\mathbf R) e^{i\mathbf k \cdot \mathbf R} = te^{i \mathbf k \cdot \hat x } + te^{i \mathbf k \cdot (-\hat x)} = t(e^{ik_x} + e^{-ik_x}) = 2t\cos(k_x)
 ```
 Similarly tunneling matrix along $y$ direction is $2t\cos(k_y)$. As a result
 ```math
