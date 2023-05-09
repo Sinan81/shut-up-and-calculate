@@ -9,7 +9,7 @@ where $\epsilon_i$ is the orbital energy, $t_{ij}$ is the tunneling matrix eleme
 In translationally invariant systems, it's convenient to work in momentum space. Accordingly, we'll first Fourier transform $\hat H_0$ starting with the orbital energy term.
 
 ```math
-\sum \epsilon_i \hat n_i = \frac{1}{N} \sum_i \epsilon_i \sum_k \sum_{k'} e^{(\mathbf k - \mathbf k')\cdot \mathbf R_i} \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k}^{} = \epsilon \sum_{\bf k} \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k}^{} 
+\sum \epsilon_i \hat n_i = \frac{1}{N} \sum_i \epsilon_i \sum_k \sum_{k'} e^{(\mathbf k - \mathbf k')\cdot \mathbf R_i} \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{} = \epsilon \sum_{\bf k} \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k}^{}
 ```
 since
 ```math
@@ -18,7 +18,7 @@ since
 
 Next we transform the tunneling term:
 ```math
-\sum_{ij} t_{ij} \hat c_i^\dagger \hat c_j^{} = \sum_{ij} t_{ij} \frac{1}{N} \sum_k \sum_{k'} e^{-i \mathbf k\cdot R_i} e^{-i \mathbf k'\cdot R_j } \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{}
+\sum_{ij} t_{ij} \hat c_i^\dagger \hat c_j^{} = \sum_{ij} t_{ij} \frac{1}{N} \sum_k \sum_{k'} e^{-i \mathbf k\cdot R_i} e^{i \mathbf k'\cdot R_j } \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{}
 ```
 Since $t_{ij}$ doesn't explicitly depend on $i$ or $j$ rather their relative difference: $t_{ij} = t(\mathbf R_j - \mathbf R_i) = t(\mathbf R)$ where we define $\mathbf R \equiv \mathbf R_j - \mathbf R_i$. Hence
 ```math
