@@ -77,3 +77,48 @@ where default filling is number of orbitals minus 0.4. Other filling can be spec
 ![](/images/tetra/cuprate_single_band_fermi_surface.png)
 
 By default, the Fermi surface is plotted in the extended zone with First Brilloin Zone is indicated. These can customized by passing relevant options as can been seen in the source code.
+
+# Density of States (DoS)
+
+DoS is simply a histogram of energy levels: number of energy levels in a given $dE$ interval. DoS appears in many physical properties of a system, and can be measured experimentally. Below we show literally a histogram plot of energy levels in single band cuprate system:
+```python
+from tba import *
+x = System()
+x.histogram_of_states()
+```
+[](/images/tetra/cuprate_single_band_histogram_of_states.png)
+More precisely, DoS is calculated using a delta function such as of Lorenz'ian form:
+```math
+N(\omega,k) = \pi \delta(\omega,k) = \frac{\gamma}{(\omega-\gamma)^2 + \gamma^2}
+```
+where $\gamma$ is a small broadenning parameter, such as $\gamma=0.05$.
+Hence DoS can be plotted as:
+```python
+from tba import *
+x = System()
+x.density_of_states()
+```
+[](/images/tetra/cuprate_single_band_density_of_states.png)
+In multiorbital systems, sometimes it's of interest how much each orbital contributes to DoS.
+This property is calculated via eigenvectors associated with energy values, i.e. eigenvalues.
+For a given vector, the norm of the i'th element yields contribution from i'th orbital in the Hamiltonian matrix basis.
+This property is plotted as
+```python
+from tba import *
+x = System(model=cuprate_three_band)
+# currently orbital weight plot is very slow
+x.density_of_states(orb_wgt=True,fast=False)
+```
+[](/images/tetra/cuprate_three_band_density_of_states.png)
+
+# Van-Hove Singularities
+
+A Van-Hove singularity (VHS) is basically areas where DoS exhibits a spike or a kink.
+A spike can be due to an energy band being flat with respect to momenta, where a lot of energy levels exist in a narrow energy interval.
+This is easily visualized by plotting DoS along side energy band cuts along symmetry points:
+```python
+from tba import *
+x = System()
+x.plot_bands_along_sym_cuts(withhos=True)
+```
+[](/images/tetra/cuprate_single_band_energy_band_cuts_with_hos.png)
