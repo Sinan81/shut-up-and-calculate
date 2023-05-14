@@ -2,7 +2,7 @@
 
 Building on the definitions provided in [Notation Basics](/docs/basics.md) section, a non-interating Hamiltonian is given by:
 
-$$ \hat H_0 = \sum_{i,\sigma} \epsilon_i \hat n_{i,\sigma} + \sum_{ij\sigma} t_{ij} \hat c_{i\sigma} ^\dagger \hat c_{i\sigma} $$
+$$ \hat H_0 = \sum_{i,\sigma} \epsilon_i \hat n_{i\sigma} + \sum_{ij\sigma} t_{ij} \hat c_{i\sigma} ^\dagger \hat c_{i\sigma} $$
 
 where $\epsilon_i$ is the orbital energy, $t_{ij}$ is the tunneling matrix elements between sites $i$ and $j$, and $\sigma$ is the spin label. Spin label, and the corresponding summation will be dropped from now on, unless when it is necessary to include. In the multiorbital case, one also needs to sum over orbitals, and hence label $i$ should be replaced with $i\alpha$ where $\alpha$ is the orbital label.
 
@@ -34,13 +34,13 @@ we obtain
 \sum_{ij} t_{ij} \hat c_i^\dagger \hat c_j^{} =  \sum_{\mathbf k} \hat c_{\mathbf k}^\dagger \hat c_{\mathbf k}^{} t(\mathbf k)
 ```
 
-It's instructive to calculate $t(\mathbf k)$ for the simple case of single-band system with nearest neighbour only tunneling. Along $x$ dimension, for a given site a particle can tunnel to the left ($R = \hat x$ ) and right ($R= - \hat x$) with magnitude $t$. Accordingly:
+It's instructive to calculate $t(\mathbf k)$ for the simple case of single-band system with nearest neighbour only tunneling. Along $x$ dimension, for a given site a particle can tunnel to the left ($R = \hat x$ ) and right ($R= - \hat x$) with magnitude $-t$. Accordingly:
 ```math
-t_x(\mathbf k) =  \sum_{\mathbf R} t(\mathbf R) e^{i\mathbf k \cdot \mathbf R} = te^{i \hat x \cdot \mathbf k} + te^{i (-\hat x) \cdot \mathbf k} = t(e^{ik_x} + e^{-ik_x}) = 2t\cos(k_x)
+t_x(\mathbf k) =  \sum_{\mathbf R} t(\mathbf R) e^{i\mathbf k \cdot \mathbf R} = -te^{i \mathbf k \cdot \hat x } -te^{i \mathbf k \cdot (-\hat x)} = -t(e^{ik_x} + e^{-ik_x}) = -2t\cos k_x
 ```
-Similarly tunneling matrix along $y$ direction is $2t\cos(k_y)$. As a result
+Similarly tunneling matrix along $y$ direction is $-2t\cos k_y$. As a result
 ```math
-H_0(\mathbf k) = \epsilon + 2t\left( \cos k_x + \cos k_y\right)
+H_0(\mathbf k) = \epsilon - 2t\left( \cos k_x + \cos k_y\right)
 ```
 
 # Plotting Energy Bands and related properties
