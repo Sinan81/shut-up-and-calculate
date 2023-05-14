@@ -90,7 +90,7 @@ x.histogram_of_states()
 
 More precisely, DoS is calculated using a delta function such as of Lorenz'ian form:
 ```math
-N(\omega,k) = \pi \delta(\omega,k) = \frac{\gamma}{(\omega-\gamma)^2 + \gamma^2}
+N(\omega,k) = \pi \delta(\omega,{\mathbf k}) = \frac{\gamma}{(\omega-E_{\mathbf k})^2 + \gamma^2}
 ```
 where $\gamma$ is a small broadenning parameter, such as $\gamma=0.05$.
 Hence DoS can be plotted as:
