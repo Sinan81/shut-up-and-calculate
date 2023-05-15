@@ -87,3 +87,28 @@ These qualitative considerations are depicted in the below animation (refresh pa
  <img src='/images/tetra/origin_of_susceptibility_arcs.gif' width="400" />
  <img src='/images/tetra/origin_of_susceptibility_arcs_final.png' width="400" />
 </p>
+
+# Bare Current Susceptibility
+
+Current operator is defined as:
+```math
+\hat J_{ij} = - \hat i t_{ij}\left (  \hat c_{i}^\dagger \hat c_{j}^{} - \hat c_{j}^\dagger \hat c_{i}^{}  \right )
+```
+Unlike density or spin operators that are local in nature, Fourier transormation of non-local bond terms where a particle is destroyed and created on nearest neighbour site pairs introduces so called phase factors along side $\hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{}$ terms.
+As a result, the current susceptibility involves some momentum dependent factors on top of the usual charge susceptbility integrand:
+```math
+\Lambda_{0,\alpha\beta}(q,\omega) = - \frac{1}{N_k}\sum_k h_{\alpha\beta}(\mathbf k, \mathbf q)\frac{f(\epsilon_k) - f(\epsilon_{k+q})}{\omega + \epsilon_k - \epsilon_{k+q} + i0^+}
+```
+where $h$ is the extra factor due to fourier transformation of bond terms, and $\alpha\beta \in \{xx,yy,xy,yx}$ are the possible directions along which current can flow.
+For example, for a single band cuprate system: $h_{xx}(\mathbf k, \mathbf q) = 4 sin(k_x + q_x/2)^2$. (Here we note that this agrees the litereture, for example discussion provided in Scalettar et al 1993).
+Static current susceptibility is calculated as
+```python
+from tba import *
+x  = System()
+x.calc_chi_vs_q(sus_type='current',plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
+```
+Detailed discussions and derivations will be provided at a later time.
+
+# References
+
+1. [Scalapino etal 1993, Phys. Rev. B 47, 7995, "Insulator, metal, or superconductor: The criteria"](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.47.7995)

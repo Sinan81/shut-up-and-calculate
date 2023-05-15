@@ -302,7 +302,6 @@ class System:
         else:
             eflat = Eall.flatten() # plt.hist needs a flat array it seems
 
-        fast=True
         if fast==True:
             # Use binning or histograms to exponentially speed up DoS calculation
             orb_wgt=False
@@ -375,7 +374,7 @@ class System:
             plt.ylabel('Intensity')
             plt.title('Density of states')
             if isSaveFig:
-                plt.savefig(self.__name__ + '_histogram_of_states.png')
+                plt.savefig(self.__name__ + '_density_of_states.png')
             plt.show()
 
         return aomg,ados,ados_orb
@@ -432,10 +431,10 @@ class System:
         else:
             xg=0.12 ; xx=0.38 ; xm=0.63 ; xgg=0.89
         # indicate symmetry point labels
-        fig.text(xg, 0.075, 'G', fontweight='bold')
+        fig.text(xg, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
         fig.text(xx, 0.075, 'X', fontweight='bold')
         fig.text(xm, 0.075, 'M', fontweight='bold')
-        fig.text(xgg, 0.075, 'G', fontweight='bold')
+        fig.text(xgg, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
@@ -502,10 +501,10 @@ class System:
         self._plot_individual_chi_cuts(ncuts,num,axlist)
 
         # indicate symmetry point labels
-        fig.text(0.12, 0.075, 'G', fontweight='bold')
+        fig.text(0.12, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
         fig.text(0.38, 0.075, 'X', fontweight='bold')
         fig.text(0.63, 0.075, 'M', fontweight='bold')
-        fig.text(0.89, 0.075, 'G', fontweight='bold')
+        fig.text(0.89, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
@@ -517,9 +516,7 @@ class System:
         plt.show()
         return fig
 
-
-
-    def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi, omega=None):
+    def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi, omega=None, sus_type='charge', plot_zone='full'):
         """ calculate susceptibility.
             procedural version is 7x faster unfortunately
             shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
@@ -539,19 +536,32 @@ class System:
         tic = time.perf_counter()
         # plot all bands
         dq = pi / Nq
-        X = np.arange(-pi + dq + shiftPlot, pi + dq + shiftPlot, dq)
-        Y = np.arange(-pi + dq + shiftPlot, pi + dq + shiftPlot, dq)
+        if plot_zone == 'full':
+            X = np.arange(-pi + dq + shiftPlot, pi + dq + shiftPlot, dq)
+            Y = np.arange(-pi + dq + shiftPlot, pi + dq + shiftPlot, dq)
+        elif plot_zone == 'Q1':
+            X = np.arange(0 + dq + shiftPlot, pi + dq + shiftPlot, dq)
+            Y = np.arange(0 + dq + shiftPlot, pi + dq + shiftPlot, dq)
+
         X, Y = np.meshgrid(X, Y)
+
 
         # now zip X,Y so that we can use pool
         x = X.reshape(X.size)
         y = Y.reshape(Y.size)
         _xy = list(zip(x, y))
-        # multiprocess pools doesn't work with class methods
-        # hence use PPool from pathos module
-        with PPool(npool) as p:
-            chi = p.map(self.real_chi_static, _xy)
-        Z = np.reshape(chi, X.shape)
+        if sus_type == 'charge':
+            # multiprocess pools doesn't work with class methods
+            # hence use PPool from pathos module
+            with PPool(npool) as p:
+                chi = p.map(self.real_chi_static, _xy)
+            Z = np.reshape(chi, X.shape)
+        elif sus_type == 'current':
+            Z = ()
+            for self.current_sus_factor in self.model.jfactors:
+                with PPool(npool) as p:
+                    chi = p.map(self.real_current_chi_static, _xy)
+                Z = Z + (np.reshape(chi, X.shape),)
 
         #with open("objs.pkl", "wb") as f:
         #    pickle.dump([Z, X, Y], f)
@@ -565,6 +575,7 @@ class System:
         self.chi = (Z, X, Y)
 
         return Z, X, Y
+
 
     def real_chi_static(self, q):
         """
@@ -610,6 +621,53 @@ class System:
         else:
             return -(self.fermiDist(Ek - eFermi) - self.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
+    def real_current_chi_static(self, q):
+        """
+        Real part of susceptibility integrand
+        """
+        # TODO reduce the number of integrations by using symmetries
+        # a 12x reduction should be possible
+        qx, qy = q
+
+        cell = self.crystal
+        r = dblquad(
+                lambda kx, ky: self.real_current_chi_integ_static(kx, ky, qx, qy),
+                cell.integ_xmin,
+                cell.integ_xmax,
+                cell.gfun,
+                cell.hfun,
+                # it is ok to comment out the following
+                # we specify this to speed calculations up by 2.5x
+                # when we set epsabs to 0.1, the precision of the results
+                # changed at the most up to third decimal place
+                # consistent with 0.1 divided by normalisation factor 4*pi^2
+                epsabs=0.1,
+            )[0]
+        # normalise
+        r = r / cell.fbz_area
+        print(r)
+        return r
+
+
+    @jit()
+    def real_current_chi_integ_static(self, kx, ky, qx, qy):
+        """
+        Real part of susceptibility integrand
+        cfunc: current susceptibility factor
+        """
+        cfact = self.current_sus_factor
+        eFermi: float
+        eFermi = self.eFermi
+        Ek = self.Eband1(kx, ky)
+        Ekq = self.Eband1(kx + qx, ky + qy)
+        ##    fermiPrime=0.
+        Ecutoff = 1.0 * kT
+        if abs(Ek - Ekq) < Ecutoff:
+            return -1*cfact((kx,ky), (qx,qy))*self.fermiPrime(Ek - eFermi)
+        else:
+            return -1*cfact( (kx,ky), (qx,qy))*(self.fermiDist(Ek - eFermi) - self.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
+
+
     @jit()
     def filling1(self,E0,Eall,Nk):
         """
@@ -649,6 +707,9 @@ class System:
             print('Running self.calc_chi_vs_q()...')
             Z, X, Y = self.calc_chi_vs_q()
 
+        if len(Z) > 1 :
+            print("It seem like we're plotting current susceptibility. Will only plot the first element")
+            Z = Z[0]
 
         matplotlib.use("TkAgg")
 
