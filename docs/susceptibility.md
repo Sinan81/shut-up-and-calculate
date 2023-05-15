@@ -100,7 +100,7 @@ As a result, the current susceptibility involves some momentum dependent factors
 \Lambda_{0,\alpha\beta}(q,\omega) = - \frac{1}{N_k}\sum_k h_{\alpha\beta}(\mathbf k, \mathbf q)\frac{f(\epsilon_k) - f(\epsilon_{k+q})}{\omega + \epsilon_k - \epsilon_{k+q} + i0^+}
 ```
 where $h$ is the extra factor due to fourier transformation of bond terms, and $\alpha\beta \in \{xx,yy,xy,yx}$ are the possible directions along which current can flow.
-For example, for a single band cuprate system: $h_{xx}(\mathbf k, \mathbf q) = 4 sin(k_x + q_x/2)^2$. (Here we note that this agrees the litereture, for example discussion provided in Scalettar et al 1993).
+For example, for a single band cuprate system: $h_{xx}(\mathbf k, \mathbf q) = 4 {\sin(k_x + q_x/2)}^2$. (Here we note that this agrees with the litereture, for example see the discussion in Scalettar et al 1993).
 Static current susceptibility is calculated as
 ```python
 from tba import *
