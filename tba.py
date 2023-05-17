@@ -707,9 +707,10 @@ class System:
             print('Running self.calc_chi_vs_q()...')
             Z, X, Y = self.calc_chi_vs_q()
 
-        if len(Z) > 1 :
-            print("It seem like we're plotting current susceptibility. Will only plot the first element")
-            Z = Z[0]
+        # TODO: the following was necessary in ploting current susceptbility
+#        if len(Z) > 1 :
+#            print("It seem like we're plotting current susceptibility. Will only plot the first element")
+#            Z = Z[0]
 
         matplotlib.use("TkAgg")
 
