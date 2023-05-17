@@ -27,6 +27,9 @@ hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
 cuprate_three_band = Model(Eband_cuprate_three_band, Tetra(), 'cuprate_three_band', 3, Ematrix_cuprate_three_band)
 cuprate_four_band_LCO = Model(Eband_LCO_four_band, Tetra(), 'cuprate_four_band_LCO', 4, Ematrix_LCO_four_band)
 
-list_of_models = [  cuprate_single_band.__name__,
-                    hexa_single_band.__name__,
-                    cuprate_three_band.__name__]
+def get_list_of_models():
+    print('List of all models:')
+    print('====================')
+    for x in globals():
+        if type(eval(x)) == Model:
+            print(x)

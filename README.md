@@ -18,7 +18,7 @@ conda env activate fermi
 import warnings
 warnings.filterwarnings('ignore')
 from tba import *
-print(list_of_models)
+get_list_of_models()
 x = System(model=cuprate_single_band)
 x.plot_bands1()
 x.plot_Fermi_surface_contour()
