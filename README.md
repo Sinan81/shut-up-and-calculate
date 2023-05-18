@@ -2,7 +2,9 @@ This project is about plotting various standard properties of 2-dimensional tigh
 
 Keywords: computational condensed matter physics, Fermi surface, tight binding approximation, energy bands, cuprates, two-dimensional systems, many body physics
 
-"Shut up and calculate!" Richard Feynman
+Our guiding principles are:
+* "Keep it simple stupid!" (KISS) Avoid clever programming stuff, and reduce the barrier to get started and contribute!
+* "Shut up and calculate!" Richard Feynman?
 
 # Create a virtual python environment
 
