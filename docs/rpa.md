@@ -33,8 +33,8 @@ x = System()
 x.model.U=1.75
 x.model.V=0
 x.model.Vnn=0 # Vprime
-x.calc_chi_rpa_vs_q(Nq=10,plot_zone='Q1',recalc=True,shiftPlot=0)
-x.plot_chi_vs_q(style='topview',chi_type='charge_rpa')
+x.calc_chi_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
+x.plot_chi_vs_q(chi_type='charge_rpa')
 ```
 
 # TO-DO
