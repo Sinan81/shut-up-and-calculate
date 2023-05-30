@@ -23,6 +23,10 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from pathos.multiprocessing import ProcessingPool as PPool
+import pysnooper
+
+import warnings
+warnings.filterwarnings('ignore')
 
 from models import *
 
@@ -36,6 +40,13 @@ ic = np.complex(0, 1.0)
 
 kT = 0.01
 
+class Chi:
+    def __init__(self):
+        self.bare = None
+        self.rpa = None # direct interaction only
+        self.grpa = None # with exchange
+        self.cuts = None
+
 class System:
     def __init__(self, model=cuprate_single_band, filling=None):
         self.model = model
@@ -43,8 +54,9 @@ class System:
         self.Eband1 = model.Eband
         self.filling = filling if filling else model.rank-0.55
         self.eFermi = self.get_Fermi_level1(self.filling)
-        self.chi = None # static susceptibility chi(omega=0,q)
-        self.chi_cuts = None
+        self.chi = Chi() # static susceptibility chi(omega=0,q)
+        self.chi_current = Chi() # static susceptibility chi(omega=0,q)
+        self.chi_spin = Chi() # static susceptibility chi(omega=0,q)
         self.__name__ = model.__name__
 
     def get_default_eband(self):
@@ -274,7 +286,8 @@ class System:
                 plt.savefig(self.__name__ + '_histogram_of_states.png')
             plt.show()
 
-    def density_of_states(self,Nk=200, gamma=0.02, ax=None, iband=None, plot_Emin=-5, plot_Emax=5, isSaveFig=False, orb_wgt=False, fast=True):
+    def density_of_states(self,Nk=200, gamma=0.02, ax=None, iband=None,
+            plot_Emin=-5, plot_Emax=5, isSaveFig=False, orb_wgt=False, fast=True):
         """
         Calculate densitity of states (DOS) via histogram of energies
         """
@@ -449,7 +462,7 @@ class System:
 
 
     def _calc_chi_cuts(self,ncuts,num):
-        if not self.chi_cuts:
+        if not self.chi.cuts:
             Zcuts = []
             # make points along the cuts
             for i in range(0, ncuts):
@@ -469,14 +482,14 @@ class System:
                     print(f"run time: {toc - tic:.1f} seconds")
                 else: # multi band
                     print('multi band chi not implemented yet')
-            self.chi_cuts = Zcuts
+            self.chi.cuts = Zcuts
 
     def _plot_individual_chi_cuts(self,ncuts,num,axlist):
         # plot
         for i in range(0, ncuts):
             ax = axlist[i]
             if self.model.rank == 1: # single band
-                ax.plot(self.chi_cuts[i], marker='o')
+                ax.plot(self.chi.cuts[i], marker='o')
             else: # multi band
                 print('multi band chi not implemented yet')
 
@@ -516,9 +529,11 @@ class System:
         plt.show()
         return fig
 
-    def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi, omega=None, sus_type='charge', plot_zone='full'):
+
+    def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
+            omega=None, sus_type='charge', plot_zone='full', rpa=None):
         """ calculate susceptibility.
-            procedural version is 7x faster unfortunately
+            procedural version is 7x faster
             shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
         """
         import pickle
@@ -528,7 +543,7 @@ class System:
             print("Exiting ...")
             return
 
-        if self.chi != None and recalc == False:
+        if self.chi.bare != None and recalc == False:
             print("system.chi is already defined. No need to calculate")
             print("force a recalculation with 'recalc=True'")
             return
@@ -545,7 +560,6 @@ class System:
 
         X, Y = np.meshgrid(X, Y)
 
-
         # now zip X,Y so that we can use pool
         x = X.reshape(X.size)
         y = Y.reshape(Y.size)
@@ -556,6 +570,7 @@ class System:
             with PPool(npool) as p:
                 chi = p.map(self.real_chi_static, _xy)
             Z = np.reshape(chi, X.shape)
+            self.chi.bare = (Z, X, Y)
         elif sus_type == 'current':
             Z = ()
             for self.current_sus_factor in self.model.jfactors:
@@ -572,9 +587,56 @@ class System:
         if show:
             self.plot_chi_vs_q(Z, X, Y)
 
-        self.chi = (Z, X, Y)
-
         return Z, X, Y
+
+
+    def calc_chi_rpa_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
+            omega=None, sus_type='charge', plot_zone='full',rpa_type='direct_only'):
+        """ calculate susceptibility.
+            procedural version is 7x faster
+            shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
+        """
+        if self.chi.rpa != None and recalc == False:
+            print("system.chi.rpa is already defined. No need to calculate")
+            print("force a recalculation with 'recalc=True'")
+            return
+
+        if self.chi.bare is None:
+            print('No previous bare Chi calculation found.')
+            print('Running self.calc_chi_vs_q()...')
+            self.calc_chi_vs_q(Nq=Nq, recalc=recalc, shiftPlot=shiftPlot, omega=omega, sus_type=sus_type, plot_zone=plot_zone)
+
+        if rpa_type == 'direct_only':
+            chi0, X, Y = self.chi.bare
+            def f(qx,qy):
+                return self.model.vmat_direct(qx,qy,self.model.U, self.model.V, self.model.Vnn)
+            Vmat = np.vectorize(f)
+            denom = 1 - np.multiply(chi0, Vmat(X,Y))
+            Z = np.divide(chi0, denom)
+            self.chi.rpa = (Z, X, Y)
+
+
+    def rpa_get_critical_UV(self, q, Vrange=(0,1.)):
+        qx = q[0]
+        qy = q[1]
+        def f(V):
+            # if Chi_RPA is diverging, then
+            # denominator should be going towards zero
+            denom = 1 - chi_bare*self.model.vmat_direct(qx,qy,V,0.,0.)
+            return denom
+        fvec = np.vectorize(f)
+        NV = 100
+        av = np.linspace(Vrange[0],Vrange[1],NV)
+        out = np.empty(0)
+        chi_bare = self.real_chi_static(q)
+        out = np.append(out, f(av))
+        # zero crossing is where sign changes
+        # generally sign changes only once
+        # although sometimes re-entrant behvaiour is observed
+        # in T vs filling diagrams
+        zc = np.where(np.diff(np.sign(out)))[0]
+        mid = ( av[zc] + av[zc+1] )/2
+        return mid
 
 
     def real_chi_static(self, q):
@@ -698,19 +760,32 @@ class System:
         denom = 4.0 * kT * (np.cosh(g) ** 2)
         return -1.0 / denom
 
-    def plot_chi_vs_q(self, style='surf', isSaveFig=False):
+    def plot_chi_vs_q(self, style='surf', isSaveFig=False, chi_type='charge_bare'):
 
-        if self.chi is not None:
-            Z, X, Y = self.chi
-        else:
-            print('No previous Chi calculation found: self.chi is not None')
-            print('Running self.calc_chi_vs_q()...')
-            Z, X, Y = self.calc_chi_vs_q()
-
-        # TODO: the following was necessary in ploting current susceptbility
-#        if len(Z) > 1 :
-#            print("It seem like we're plotting current susceptibility. Will only plot the first element")
-#            Z = Z[0]
+        if chi_type == 'charge_bare':
+            if self.chi.bare is not None:
+                Z, X, Y = self.chi.bare
+            else:
+                print('No previous Chi calculation found: self.chi.bare is "None"')
+                print('Running self.calc_chi_vs_q()...')
+                Z, X, Y = self.calc_chi_vs_q()
+        if chi_type == 'charge_rpa':
+            if self.chi.bare is not None:
+                Z, X, Y = self.chi.rpa
+            else:
+                print('No previous Chi calculation found: self.chi.bare is "None"')
+                print('Running self.calc_chi_vs_q()...')
+                Z, X, Y = self.calc_chi_vs_q(rpa='direct_only')
+        elif chi_type == 'current_bare':
+            if self.chi_current.bare is not None:
+                Z, X, Y = self.chi_current.bare
+            else:
+                print('No previous Chi calculation found: self.chi.bare is "None"')
+                print('Running self.calc_chi_vs_q()...')
+                Z, X, Y = self.calc_chi_vs_q(sus_type='current')
+                # TODO generalize, plot all components
+                print("Info: plotting only the first element")
+                Z = Z[0]
 
         matplotlib.use("TkAgg")
 

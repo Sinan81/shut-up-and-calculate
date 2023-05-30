@@ -2,13 +2,16 @@
 
 from crystals import Tetra, Hexa
 from ebands import *
+from numpy import cos,sin
 
 def jfact1(k,q):
-    return 4*np.sin(k[0] + q[0]/2)**2
+    return 4*sin(k[0] + q[0]/2)**2
 
 def jfact2(k,q):
-    return 4*np.sin(k[1] + q[1]/2)**2
+    return 4*sin(k[1] + q[1]/2)**2
 
+def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
+    return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
 
 class Model:
     # Associate energy band & the crystal for convenience
@@ -23,6 +26,12 @@ class Model:
 # List of models
 cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
 cuprate_single_band.jfactors = (jfact1, jfact2)
+cuprate_single_band.vmat_direct = vmat_direct
+cuprate_single_band.U = 0.5         # initialize local interaction
+cuprate_single_band.V = 0.25        # initialize nearest neighbour interaction
+cuprate_single_band.Vnn = 0.125     # initialize next nearest neighbour
+cuprate_single_band.vbasis = None   # to be used in gRPA
+
 hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
 cuprate_three_band = Model(Eband_cuprate_three_band, Tetra(), 'cuprate_three_band', 3, Ematrix_cuprate_three_band)
 cuprate_four_band_LCO = Model(Eband_LCO_four_band, Tetra(), 'cuprate_four_band_LCO', 4, Ematrix_LCO_four_band)
