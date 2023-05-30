@@ -41,6 +41,8 @@ The following references are recommended for topics discussed in this repository
 
 [Susceptibility](docs/susceptibility.md)
 
+[Random Phase Approximation (RPA)](docs/rpa.md)
+
 # Coming Soon
 - A procedural version of this code will also be provided so that users can choose between OOP vs otherwise.
 - pytests
