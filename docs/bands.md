@@ -2,7 +2,7 @@
 
 Building on the definitions provided in [Notation Basics](/docs/basics.md) section, a non-interating Hamiltonian is given by:
 
-$$ \hat H_0 = \sum_{i,\sigma} \epsilon_i \hat n_{i\sigma} + \sum_{ij\sigma} t_{ij} \hat c_{i\sigma} ^\dagger \hat c_{i\sigma} $$
+$$ \hat H_0 = \sum_{i,\sigma} \epsilon_i \hat n_{i\sigma} + \sum_{ij\sigma} t_{ij} \hat c_{i\sigma} ^\dagger \hat c_{j\sigma}^{} $$
 
 where $\epsilon_i$ is the orbital energy, $t_{ij}$ is the tunneling matrix elements between sites $i$ and $j$, and $\sigma$ is the spin label. Spin label, and the corresponding summation will be dropped from now on, unless when it is necessary to include. In the multiorbital case, one also needs to sum over orbitals, and hence label $i$ should be replaced with $i\alpha$ where $\alpha$ is the orbital label.
 
