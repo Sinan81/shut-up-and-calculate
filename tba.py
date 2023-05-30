@@ -760,29 +760,32 @@ class System:
         denom = 4.0 * kT * (np.cosh(g) ** 2)
         return -1.0 / denom
 
-    def plot_chi_vs_q(self, style='surf', isSaveFig=False, chi_type='charge_bare'):
+    def plot_chi_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='charge_bare'):
 
         if chi_type == 'charge_bare':
+            ttag='Bare charge susceptibility'
             if self.chi.bare is not None:
                 Z, X, Y = self.chi.bare
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q()
+                Z, X, Y = self.calc_chi_vs_q(plot_zone=plot_zone)
         if chi_type == 'charge_rpa':
+            ttag='RPA charge susceptibility'
             if self.chi.bare is not None:
                 Z, X, Y = self.chi.rpa
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q(rpa='direct_only')
+                Z, X, Y = self.calc_chi_vs_q(rpa='direct_only', plot_zone=plot_zone)
         elif chi_type == 'current_bare':
+            ttag='Bare current susceptibility'
             if self.chi_current.bare is not None:
                 Z, X, Y = self.chi_current.bare
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q(sus_type='current')
+                Z, X, Y = self.calc_chi_vs_q(sus_type='current', plot_zone=plot_zone)
                 # TODO generalize, plot all components
                 print("Info: plotting only the first element")
                 Z = Z[0]
@@ -816,7 +819,7 @@ class System:
 
         plt.xlabel("qx/$\pi$")
         plt.ylabel("qy/$\pi$")
-        plt.title("Bare static susceptibility $\chi(q,\omega=0)$")
+        plt.title(ttag+" $\chi(q,\omega=0)$")
 
         if isSaveFig:
             plt.savefig(self.__name__ + "_susceptibility.png")
