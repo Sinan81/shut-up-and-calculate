@@ -28,7 +28,8 @@ On the other hand cosine terms in interaction function have tendency to emphesiz
 # Calculating RPA
 
 ```python
-from tba import *; x = System() 
+from tba import *
+x = System() 
 x.model.U=1.75
 x.model.V=0
 x.model.Vnn=0 # Vprime
