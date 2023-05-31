@@ -27,9 +27,9 @@ class Model:
 cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
 cuprate_single_band.jfactors = (jfact1, jfact2)
 cuprate_single_band.vmat_direct = vmat_direct
-cuprate_single_band.U = 0.5         # initialize local interaction
-cuprate_single_band.V = 0.25        # initialize nearest neighbour interaction
-cuprate_single_band.Vnn = 0.125     # initialize next nearest neighbour
+cuprate_single_band.U = 0         # initialize local interaction
+cuprate_single_band.V = 0        # initialize nearest neighbour interaction
+cuprate_single_band.Vnn = 0     # initialize next nearest neighbour
 cuprate_single_band.vbasis = None   # to be used in gRPA
 
 hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
