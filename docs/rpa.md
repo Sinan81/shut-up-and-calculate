@@ -40,6 +40,9 @@ giving:
 
 ![RPA Susceptibility](/images/tetra/cuprate_single_band_susceptibility_rpa.png)
 
+In this calculation we note that RPA susceptibility is about an order of magnitude bigger than the underlying bare susceptibility which is in the order of 1.
+This is because for the selected parameter values, system is near critical: in fact $\chi$ will diverge at $U=1.74$ with all other parameters kept the same.
+
 # TO-DO
 
 - A through discussion of RPA theory
