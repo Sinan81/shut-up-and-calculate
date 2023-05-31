@@ -12,7 +12,7 @@ Solving for $\chi$ gives:
 which is the RPA approximation, a so-called weak coupling approach. A phase transtion occurs when $\chi$ diverges.
 Hence, one can calculate phase boundaries for a given parameter space.
 A diverging $\chi$, that is when $\chi \rightarrow \infty$, implies that the denominator $1-U\chi_0$ goes to zero.
-Solving $1-U(\mathbf q) \chi_0(\mathbf q)$ yields critical $U$, or $U_c$, marking a phase boundary.
+Solving $1-U(\mathbf q) \chi_0(\mathbf q) = 0$ yields critical $U$, or $U_c$, marking a phase boundary.
 
 # Direct Interaction
 
