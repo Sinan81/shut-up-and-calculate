@@ -54,6 +54,7 @@ qstar=(np.pi,np.pi)
 x.rpa_get_critical_value(qstar,param='U',plot=True)
 ```
 giving
+
 ![RPA Susceptibility](/images/rpa_find_critical_value.png)
 
 # TO-DO
