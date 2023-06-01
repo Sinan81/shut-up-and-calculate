@@ -44,8 +44,17 @@ In this calculation we note that RPA susceptibility is about an order of magnitu
 This is because for the selected parameter values, system is near critical: in fact $\chi$ will diverge at $U=1.74$ with all other parameters kept the same.
 $\chi$ maximum and corresponding momenta, to be denote by $q^*$, can be obtained via
 ```python
-get_max_3D(mysystem.chi.rpa)
+qstar = get_max_3D(mysystem.chi.rpa)
 ```
+For a given $\mathbf q^*$, a critical parameter value can be determined by plotting inverse RPA susceptibility, and finding zero crossing:
+```python
+from tba import * ; x = System()
+# assume qstar is pi,pi
+qstar=(np.pi,np.pi)
+x.rpa_get_critical_value(qstar,param='U',plot=True)
+```
+giving
+![RPA Susceptibility](/images/rpa_find_critical_value.png)
 
 # TO-DO
 
