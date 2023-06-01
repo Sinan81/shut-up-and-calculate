@@ -628,27 +628,48 @@ class System:
             self.chi.rpa = (Z, X, Y)
 
 
-    def rpa_get_critical_UV(self, q, Vrange=(0,1.)):
+    def rpa_get_critical_value(self, q, prange=(0,3), param='U', plot=False):
+        """
+        get critical value for a system parameter
+        indicating a phase boundary.
+        """
+        if param == None:
+            print("Enter a system parameter, for example: 'param=x.model.U'")
+
         qx = q[0]
         qy = q[1]
-        def f(V):
+        def f(pval):
+
+            chi_bare = self.real_chi_static(q)
             # if Chi_RPA is diverging, then
             # denominator should be going towards zero
-            denom = 1 - chi_bare*self.model.vmat_direct(qx,qy,V,0.,0.)
-            return denom
+            if   param=='U':
+                denom = 1 - chi_bare*self.model.vmat_direct(qx,qy, pval, self.model.V, self.model.Vnn)
+            elif param=='V':
+                denom = 1 - chi_bare*self.model.vmat_direct(qx,qy, self.model.U, pval, self.model.Vnn)
+            elif param=='Vnn':
+                denom = 1 - chi_bare*self.model.vmat_direct(qx,qy, self.model.U, self.model.V, pval)
+            return denom/chi_bare
         fvec = np.vectorize(f)
         NV = 100
-        av = np.linspace(Vrange[0],Vrange[1],NV)
-        out = np.empty(0)
-        chi_bare = self.real_chi_static(q)
-        out = np.append(out, f(av))
+        av = np.linspace(prange[0],prange[1],NV)
+        out = np.append(np.empty(0), f(av))
         # zero crossing is where sign changes
         # generally sign changes only once
         # although sometimes re-entrant behvaiour is observed
         # in T vs filling diagrams
         zc = np.where(np.diff(np.sign(out)))[0]
         mid = ( av[zc] + av[zc+1] )/2
-        return mid, out
+        print('Critical value is:',mid)
+        if plot:
+            plt.plot(av,out)
+            plt.axhline(color='r',linestyle=':')
+            plt.title("Determining critical parameter value")
+            plt.ylabel('$1/\chi$')
+            plt.xlabel(param)
+            plt.savefig("critical_value.png")
+            plt.show()
+        return mid, out, av
 
 
     def real_chi_static(self, q):
