@@ -4,13 +4,15 @@ from crystals import Tetra, Hexa
 from ebands import *
 from numpy import cos, sin, exp
 
-# dont convert these to class functions
+# dont convert these to class methods
 # since numba will probably not work
 def jfact1(k,q):
     return 4*sin(k[0] + q[0]/2)**2
 
+
 def jfact2(k,q):
     return 4*sin(k[1] + q[1]/2)**2
+
 
 def jfact3(k,q):
     kx=k[0]
@@ -21,6 +23,7 @@ def jfact3(k,q):
     AB = -exp(1j*(kx - ky + qx - qy))
     BA = -exp(1j*(-kx+ky))
     BB = exp(-1j*(kx+ky+qy)
+    return AA + AB + BA + BB
 
 
 def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
