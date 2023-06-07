@@ -46,6 +46,8 @@ The following references are recommended for topics discussed in this repository
 # To-Do
 - Multiband susceptibility
 - Extended RPA (with ladder diagrams and non-local interactions)
+- Adaptive susceptibility plots using python adaptive or scikit-optimize
+- pytests etc
 
 
 # Example Visuals
