@@ -22,7 +22,7 @@ def jfact3(k,q):
     AA = exp(1j*(kx + ky + qx))
     AB = -exp(1j*(kx - ky + qx - qy))
     BA = -exp(1j*(-kx+ky))
-    BB = exp(-1j*(kx+ky+qy)
+    BB = exp(-1j*(kx+ky+qy))
     return AA + AB + BA + BB
 
 
@@ -41,6 +41,7 @@ class Model:
 
 # List of models
 cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
+# Note that these factors should be multiplied by t_ij**2
 cuprate_single_band.jfactors = (jfact1, jfact2)
 cuprate_single_band.vmat_direct = vmat_direct
 cuprate_single_band.U = 0         # initialize local interaction
