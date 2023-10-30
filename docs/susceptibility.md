@@ -94,6 +94,7 @@ Current operator is defined as:
 ```math
 \hat J_{ij} = - \hat i t_{ij}\left (  \hat c_{i}^\dagger \hat c_{j}^{} - \hat c_{j}^\dagger \hat c_{i}^{}  \right )
 ```
+which is associated with a given bond $ij$ by definition. 
 Unlike density or spin operators that are local in nature, Fourier transormation of non-local bond terms where a particle is destroyed and created on nearest neighbour site pairs introduces so called phase factors along side $\hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{}$ terms.
 As a result, the current susceptibility involves some momentum dependent factors on top of the usual charge susceptbility integrand:
 ```math
@@ -102,8 +103,13 @@ As a result, the current susceptibility involves some momentum dependent factors
 where $h$ is the extra factor due to fourier transformation of bond terms, and $\alpha\beta \in \{xx,yy,xy,yx}$ are the possible directions along which current can flow.
 For example, for a single band cuprate system:
 ```math
-h_{xx}(\mathbf k, \mathbf q) = 4 {\sin(k_x + q_x/2)}^2
+\begin{align}
+h_{xx}(\mathbf k, \mathbf q) &= 4 t^2 {\sin(k_x + q_x/2)}^2 \\
+h_{yy}(\mathbf k, \mathbf q) &= 4 t^2 {\sin(k_y + q_y/2)}^2 \\
+h_{xy}(\mathbf k, \mathbf q) &= 4 t_{nn}^2 {\sin(k_x + k_y + q_x/2 + q_y/2)}^2
+\end{align}
 ```
+where $t_{nn}$ is the next nearest neighbour hopping term.
 Here we note that this agrees with the litereture, for example see the discussion in Scalettar et al 1993.
 Static current susceptibility is calculated as
 ```python
