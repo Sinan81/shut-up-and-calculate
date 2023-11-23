@@ -43,8 +43,8 @@ A significant qualitative insight into this equation can be gained as follows:
 
 Bare susceptibility can be calculated as:
 ```python
-x=System()
-x.plot_chi_vs_q(Nq=10,style='topview') # plot res Nq by Nq
+x = System()
+x.chi.plot_chi_vs_q(Nq=10,style='topview') # plot res Nq by Nq
 # surface plot option is also available
 ```
 <p float='left'>
@@ -62,7 +62,7 @@ Often, it's convenient to plot $\chi_{0}$ along symmetry cuts only:
 x  = System()
 # 20 data points per cut (80 points in total)
 # hence 10x faster than a full calculation.
-x.plot_chi_along_sym_cuts(num=20)
+x.chi.plot_chi_along_sym_cuts(num=20)
 ```
 
 
@@ -94,7 +94,7 @@ Current operator is defined as:
 ```math
 \hat J_{ij} = - \hat i t_{ij}\left (  \hat c_{i}^\dagger \hat c_{j}^{} - \hat c_{j}^\dagger \hat c_{i}^{}  \right )
 ```
-which is associated with a given bond $ij$ by definition. 
+which is associated with a given bond $ij$ by definition.
 Unlike density or spin operators that are local in nature, Fourier transormation of non-local bond terms where a particle is destroyed and created on nearest neighbour site pairs introduces so called phase factors along side $\hat c_{\mathbf k}^\dagger \hat c_{\mathbf k'}^{}$ terms.
 As a result, the current susceptibility involves some momentum dependent factors on top of the usual charge susceptbility integrand:
 ```math
@@ -115,7 +115,7 @@ Static current susceptibility is calculated as
 ```python
 from tba import *
 x  = System()
-x.calc_chi_vs_q(sus_type='current',plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
+x.chi.calc_chi_vs_q(sus_type='current',plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
 ```
 Detailed discussions and derivations will be provided at a later time.
 
