@@ -15,19 +15,12 @@ def jfact2(k,q):
 
 
 def jfact3(k,q):
-    kx=k[0]
-    qx=q[0]
-    ky=k[1]
-    qy=q[1]
-    AA = exp(1j*(kx + ky + qx))
-    AB = -exp(1j*(kx - ky + qx - qy))
-    BA = -exp(1j*(-kx+ky))
-    BB = exp(-1j*(kx+ky+qy))
-    return AA + AB + BA + BB
+    return 4*sin(k[0] + k[1] + +q[0]/2 + q[1]/2)**2
 
 
 def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
     return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
+
 
 class Model:
     # Associate energy band & the crystal for convenience
@@ -39,10 +32,11 @@ class Model:
         self.__name__ = name
         self.jfactors = None
 
+
 # List of models
 cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
 # Note that these factors should be multiplied by t_ij**2
-cuprate_single_band.jfactors = (jfact1, jfact2)
+cuprate_single_band.jfactors = (jfact1, jfact2, jfact3)
 cuprate_single_band.vmat_direct = vmat_direct
 cuprate_single_band.U = 0         # initialize local interaction
 cuprate_single_band.V = 0        # initialize nearest neighbour interaction
@@ -52,6 +46,7 @@ cuprate_single_band.vbasis = None   # to be used in gRPA
 hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
 cuprate_three_band = Model(Eband_cuprate_three_band, Tetra(), 'cuprate_three_band', 3, Ematrix_cuprate_three_band)
 cuprate_four_band_LCO = Model(Eband_LCO_four_band, Tetra(), 'cuprate_four_band_LCO', 4, Ematrix_LCO_four_band)
+
 
 def get_list_of_models():
     print('List of all models:')
