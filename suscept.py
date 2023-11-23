@@ -52,6 +52,7 @@ class Chi:
         self.cuts = None
         self.system = system
 
+
     def real_chi_static(self, q):
         """
         Real part of susceptibility integrand
@@ -79,6 +80,7 @@ class Chi:
         r = r / cell.fbz_area
         print(r)
         return r
+
 
     @jit()
     def real_chi_integ_static(self, kx, ky, qx, qy):
