@@ -25,7 +25,7 @@ x = System(model=cuprate_single_band)
 x.plot_bands1()
 x.plot_Fermi_surface_contour()
 x.filling_vs_E1()
-x.plot_chi_vs_q()
+x.chi.plot_chi_vs_q()
 ```
 
 # References

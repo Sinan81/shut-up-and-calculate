@@ -29,7 +29,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from models import *
-from suscept import *
+from chi import *
 
 matplotlib.use("TkAgg")
 
