@@ -187,7 +187,6 @@ class Chi:
             print("force a recalculation with 'recalc=True'")
             return
 
-        tic = time.perf_counter()
         # plot all bands
         dq = pi / Nq
         if plot_zone == 'full':
@@ -199,10 +198,25 @@ class Chi:
 
         X, Y = np.meshgrid(X, Y)
 
+        Z = run_npool(X,Y,sus_type)
+
+        #with open("objs.pkl", "wb") as f:
+        #    pickle.dump([Z, X, Y], f)
+
+        if show:
+            self.plot_chi_vs_q(Z, X, Y)
+
+        return Z, X, Y
+
+
+    def run_npool(X,Y,sus_type):
+
+        tic = time.perf_counter()
         # now zip X,Y so that we can use pool
         x = X.reshape(X.size)
         y = Y.reshape(Y.size)
         _xy = list(zip(x, y))
+
         if sus_type == 'charge':
             # multiprocess pools doesn't work with class methods
             # hence use PPool from pathos module
@@ -217,16 +231,10 @@ class Chi:
                     chi = p.map(self.real_current_chi_static, _xy)
                 Z = Z + (np.reshape(chi, X.shape),)
 
-        #with open("objs.pkl", "wb") as f:
-        #    pickle.dump([Z, X, Y], f)
-
         toc = time.perf_counter()
         print(f"run time: {toc - tic:.1f} seconds")
+        return Z
 
-        if show:
-            self.plot_chi_vs_q(Z, X, Y)
-
-        return Z, X, Y
 
 
     def plot_chi_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='charge_bare'):
@@ -418,4 +426,3 @@ class Chi:
             return -1*cfact((kx,ky), (qx,qy))*self.system.fermiPrime(Ek - eFermi)
         else:
             return -1*cfact( (kx,ky), (qx,qy))*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
-
