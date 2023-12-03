@@ -44,7 +44,7 @@ A significant qualitative insight into this equation can be gained as follows:
 Bare susceptibility can be calculated as:
 ```python
 x = System()
-x.chi.plot_chi_vs_q(Nq=10,style='topview') # plot res Nq by Nq
+x.chic.plot_vs_q(Nq=10,style='topview') # plot res Nq by Nq
 # surface plot option is also available
 ```
 <p float='left'>
@@ -62,7 +62,7 @@ Often, it's convenient to plot $\chi_{0}$ along symmetry cuts only:
 x  = System()
 # 20 data points per cut (80 points in total)
 # hence 10x faster than a full calculation.
-x.chi.plot_chi_along_sym_cuts(num=20)
+x.chic.plot_along_sym_cuts(num=20)
 ```
 
 
@@ -115,7 +115,7 @@ Static current susceptibility is calculated as
 ```python
 from tba import *
 x  = System()
-x.chi.calc_chi_vs_q(sus_type='current',plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
+x.chic.calc_vs_q(sus_type='current',plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
 ```
 Detailed discussions and derivations will be provided at a later time.
 

@@ -53,9 +53,9 @@ class Chi:
         self.system = system
 
 
-    def real_chi_static(self, q):
+    def real_static(self, q):
         """
-        Real part of susceptibility integrand
+        Real part of zero freq susceptibility integrand
         """
         # TODO reduce the number of integrations by using symmetries
         # a 12x reduction should be possible
@@ -64,7 +64,7 @@ class Chi:
         cell = self.system.crystal
 
         r = dblquad(
-                lambda kx, ky: self.real_chi_integ_static(kx, ky, qx, qy),
+                lambda kx, ky: self.real_integ_static(kx, ky, qx, qy),
                 cell.integ_xmin,
                 cell.integ_xmax,
                 cell.gfun,
@@ -83,7 +83,7 @@ class Chi:
 
 
     @jit()
-    def real_chi_integ_static(self, kx, ky, qx, qy):
+    def real_integ_static(self, kx, ky, qx, qy):
         """
         Real part of susceptibility integrand
         """
@@ -98,8 +98,48 @@ class Chi:
         else:
             return -(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
+    @jit()
+    def real_integ_static_gbasis(self, kx, ky, qx, qy):
+        """
+        Real part of susceptibility integrand
+        cfunc: current susceptibility extra factors
+        """
+        k = (kx,ky)
+        q = (qx,qy)
 
-    def _calc_chi_cuts(self,ncuts,num):
+        if len(self.extra_sus_factor) == 1:
+            cfact = self.extra_sus_factor(k)
+        else:
+            gleft, gright = self.extra_sus_factor
+            cfact = gleft(k)*gright(k)
+
+        eFermi: float
+        eFermi = self.system.eFermi
+        Ek = self.system.Eband1(kx, ky)
+        Ekq = self.system.Eband1(kx + qx, ky + qy)
+        ##    fermiPrime=0.
+        Ecutoff = 1.0 * kT
+        if abs(Ek - Ekq) < Ecutoff:
+            return -1*cfact*self.system.fermiPrime(Ek - eFermi)
+        else:
+            return -1*cfact*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
+
+
+    def _gbasis_bare(self, _xy):
+        """
+        calculate bare current susceptibility
+        """
+        Z = ()
+        # gbasis is diagonal. Hence a single for loop is sufficient
+        for gfunc in self.system.model.gbasis:
+            self.extra_sus_factor = (gfunc, gfunc)
+            with PPool(npool) as p:
+                chi = p.map(self.real_static, _xy)
+            Z = Z + (chi,)
+            return Z
+
+
+    def _calc_cuts(self,ncuts,num):
         if not self.cuts:
             Zcuts = []
             # make points along the cuts
@@ -114,7 +154,7 @@ class Chi:
                     # hence use PPool from pathos module
                     tic = time.perf_counter()
                     with PPool(npool) as p:
-                        Z = p.map(self.real_chi_static, _xy)
+                        Z = p.map(self.real_static, _xy)
                     Zcuts.append(Z)
                     toc = time.perf_counter()
                     print(f"run time: {toc - tic:.1f} seconds")
@@ -124,7 +164,7 @@ class Chi:
 
 
 
-    def _plot_individual_chi_cuts(self,ncuts,num,axlist):
+    def _plot_individual_cuts(self,ncuts,num,axlist):
         # plot
         for i in range(0, ncuts):
             ax = axlist[i]
@@ -143,7 +183,7 @@ class Chi:
                 ax.set_ylabel('Intensity (unitless)')
 
 
-    def plot_chi_along_sym_cuts(self, isSaveFig=False, num=3):
+    def plot_along_sym_cuts(self, isSaveFig=False, num=3):
 
         ncuts = len(self.system.crystal.sym_cuts) # exclude duplicate points
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
@@ -168,9 +208,29 @@ class Chi:
         plt.show()
         return fig
 
+    def run_npool(self,X,Y):
 
-    def calc_chi_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
-            omega=None, sus_type='charge', plot_zone='full', rpa=None):
+        tic = time.perf_counter()
+
+        # now zip X,Y so that we can use pool
+        x = X.reshape(X.size)
+        y = Y.reshape(Y.size)
+        _xy = list(zip(x, y))
+
+        # multiprocess pools doesn't work with class methods
+        # hence use PPool from pathos module
+        with PPool(npool) as p:
+            chi = p.map(self.real_static, _xy)
+        Z = np.reshape(chi, X.shape)
+        self.bare = (Z, X, Y)
+
+        toc = time.perf_counter()
+        print(f"run time: {toc - tic:.1f} seconds")
+        return Z
+
+
+    def calc_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
+            omega=None, plot_zone='full', rpa=None):
         """ calculate susceptibility.
             procedural version is 7x faster
             shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
@@ -198,74 +258,36 @@ class Chi:
 
         X, Y = np.meshgrid(X, Y)
 
-        Z = run_npool(X,Y,sus_type)
+        Z = self.run_npool(X,Y)
 
         #with open("objs.pkl", "wb") as f:
         #    pickle.dump([Z, X, Y], f)
 
         if show:
-            self.plot_chi_vs_q(Z, X, Y)
+            self.plot_vs_q(Z, X, Y)
 
         return Z, X, Y
 
 
-    def run_npool(X,Y,sus_type):
+    def plot_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='bare'):
 
-        tic = time.perf_counter()
-        # now zip X,Y so that we can use pool
-        x = X.reshape(X.size)
-        y = Y.reshape(Y.size)
-        _xy = list(zip(x, y))
-
-        if sus_type == 'charge':
-            # multiprocess pools doesn't work with class methods
-            # hence use PPool from pathos module
-            with PPool(npool) as p:
-                chi = p.map(self.real_chi_static, _xy)
-            Z = np.reshape(chi, X.shape)
-            self.bare = (Z, X, Y)
-        elif sus_type == 'current':
-            Z = ()
-            for self.current_sus_factor in self.model.jfactors:
-                with PPool(npool) as p:
-                    chi = p.map(self.real_current_chi_static, _xy)
-                Z = Z + (np.reshape(chi, X.shape),)
-
-        toc = time.perf_counter()
-        print(f"run time: {toc - tic:.1f} seconds")
-        return Z
-
-
-
-    def plot_chi_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='charge_bare'):
-
-        if chi_type == 'charge_bare':
-            ttag='Bare charge susceptibility'
+        if chi_type == 'bare':
+            ttag='Bare susceptibility'
             if self.bare is not None:
                 Z, X, Y = self.bare
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_chi_vs_q()...')
                 Z, X, Y = self.calc_chi_vs_q(plot_zone=plot_zone)
-        if chi_type == 'charge_rpa':
-            ttag='RPA charge susceptibility'
-            if self.bare is not None:
+
+        if chi_type == 'rpa':
+            ttag='RPA susceptibility'
+            if self.rpa is not None:
                 Z, X, Y = self.rpa
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_chi_vs_q()...')
                 Z, X, Y = self.calc_chi_vs_q(rpa='direct_only', plot_zone=plot_zone)
-        elif chi_type == 'current_bare':
-            ttag='Bare current susceptibility'
-            if self.chi_current.bare is not None:
-                Z, X, Y = self.chi_current.bare
-            else:
-                print('No previous Chi calculation found: self.chi.bare is "None"')
-                print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q(sus_type='current', plot_zone=plot_zone)
-                # TODO generalize, plot all components
-                print("Info: plotting only the first element")
-                Z = Z[0]
 
         matplotlib.use("TkAgg")
 
@@ -309,8 +331,8 @@ class Chi:
         return plt
 
 
-    def calc_chi_rpa_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
-            omega=None, sus_type='charge', plot_zone='full',rpa_type='direct_only'):
+    def calc_rpa_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
+            omega=None, plot_zone='full',rpa_type='direct_only'):
         """ calculate susceptibility.
             procedural version is 7x faster
             shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
@@ -323,7 +345,7 @@ class Chi:
         if self.bare is None:
             print('No previous bare Chi calculation found.')
             print('Running self.calc_chi_vs_q()...')
-            self.calc_chi_vs_q(Nq=Nq, recalc=recalc, shiftPlot=shiftPlot, omega=omega, sus_type=sus_type, plot_zone=plot_zone)
+            self.calc_vs_q(Nq=Nq, recalc=recalc, shiftPlot=shiftPlot, omega=omega, plot_zone=plot_zone)
 
         if rpa_type == 'direct_only':
             chi0, X, Y = self.bare
@@ -349,7 +371,7 @@ class Chi:
         qy = q[1]
         def f(pval):
 
-            chi_bare = self.real_chi_static(q)
+            chi_bare = self.real_static(q)
             # if Chi_RPA is diverging, then
             # denominator should be going towards zero
             if   param=='U':
@@ -381,7 +403,54 @@ class Chi:
         return mid, out, av
 
 
-    def real_current_chi_static(self, q):
+
+class ChiCharge(Chi):
+    """
+    Charge Susceptibility
+    """
+    def __init__(self,system):
+        # rename original Chi as ChiCharge for completeness
+        super().__init__(system)
+
+
+class ChiCurrent(Chi):
+    """
+    Current Susceptbility
+    """
+    def __init__(self,system):
+        # inherit everything from default chi
+        # modify or add methods when necessary
+        super().__init__(system)
+
+
+    def run_npool(self,X,Y):
+
+        tic = time.perf_counter()
+        # now zip X,Y so that we can use pool
+        x = X.reshape(X.size)
+        y = Y.reshape(Y.size)
+        _xy = list(zip(x, y))
+
+#        elif sus_type == 'current':
+#            z = ()
+#            for self.current_sus_factor in self.model.jfactors:
+#                with PPool(npool) as p:
+#                    chi = p.map(self.real_current_chi_static, _xy)
+#                Z = Z + (np.reshape(chi, X.shape),)
+#            self.current_bare = (Z,X,Y)
+#        elif sus_type == 'current_v2':
+        zflat = self._curr_sus_bare(_xy)
+        Z = ()
+        for z in zflat:
+            Z = Z + (np.reshape(zflat, X.shape),)
+        self.current_bare_v2 = (Z, X, Y)
+
+        toc = time.perf_counter()
+        print(f"run time: {toc - tic:.1f} seconds")
+        return Z
+
+
+    def real_static(self, q):
         """
         Real part of susceptibility integrand
         """
@@ -391,7 +460,7 @@ class Chi:
 
         cell = self.system.crystal
         r = dblquad(
-                lambda kx, ky: self.real_current_chi_integ_static(kx, ky, qx, qy),
+                lambda kx, ky: self.real_integ_static(kx, ky, qx, qy),
                 cell.integ_xmin,
                 cell.integ_xmax,
                 cell.gfun,
@@ -410,12 +479,24 @@ class Chi:
 
 
     @jit()
-    def real_current_chi_integ_static(self, kx, ky, qx, qy):
+    def real_integ_static(self, kx, ky, qx, qy):
         """
         Real part of susceptibility integrand
-        cfunc: current susceptibility factor
+        cfunc: current susceptibility extra factors
         """
-        cfact = self.system.current_sus_factor
+        k = (kx,ky)
+        q = (qx,qy)
+        if len(self.current_sus_factor) == 1:
+            # hand derived current sus factor that's fully real
+            cfact = self.current_sus_factor(k,q)
+        else:
+            # current sus factor = A1A2 -A1B2 -B1A2 + B1B2
+            A1,B1 = self.current_sus_factor[0]
+            A2,B2 = self.current_sus_factor[1]
+            # below, -1 comes from complex constant in current operator definitions: i**2 = -1
+            cfact = -1*(A1(k,q)*A2(k,q) - A1(k,q)*B2(k,q) - B1(k,q)*A2(k,q) + B1(k,q)*B2(k,q))
+            cfact = np.imag(cfact) if self.cfact_calc == 'imag' else np.real(cfact)
+
         eFermi: float
         eFermi = self.system.eFermi
         Ek = self.system.Eband1(kx, ky)
@@ -423,6 +504,31 @@ class Chi:
         ##    fermiPrime=0.
         Ecutoff = 1.0 * kT
         if abs(Ek - Ekq) < Ecutoff:
-            return -1*cfact((kx,ky), (qx,qy))*self.system.fermiPrime(Ek - eFermi)
+            return -1*cfact*self.system.fermiPrime(Ek - eFermi)
         else:
-            return -1*cfact( (kx,ky), (qx,qy))*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
+            return -1*cfact*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
+
+
+    def _curr_sus_bare(self, _xy):
+        """
+        calculate bare current susceptibility
+        """
+        Z = ()
+        for hleft in self.system.model.hfactors_left:
+            for hright in self.system.model.hfactors_right:
+                self.current_sus_factor = (hleft, hright)
+                #print('######')
+                for self.cfact_calc  in {'real', 'imag'}:
+                    with PPool(npool) as p:
+                        chi = p.map(self.real_static, _xy)
+                        if self.cfact_calc == 'imag':
+                            chi_imag = chi
+                        else:
+                            chi_real = chi
+                ztemp = np.array(chi_real) + 1j*np.array(chi_imag)
+                Z = Z + (ztemp,)
+                return Z
+
+    def calc_rpa_vs_q(self):
+        print("Not implemented for current susceptbility. Exitting ...")
+        return

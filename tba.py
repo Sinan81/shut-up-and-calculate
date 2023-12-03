@@ -59,9 +59,9 @@ class System:
         self.Eband1 = model.Eband
         self.filling = filling if filling else model.rank-0.55
         self.eFermi = self.get_Fermi_level1(self.filling)
-        self.chi = Chi(self) # static susceptibility chi(omega=0,q)
-        self.chi_current = Chi(self) # static susceptibility chi(omega=0,q)
-        self.chi_spin = Chi(self) # static susceptibility chi(omega=0,q)
+        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.__name__ = model.__name__
 
     def get_default_eband(self):
