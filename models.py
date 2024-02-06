@@ -145,7 +145,7 @@ class Model:
 
 
 # List of models
-cuprate_single_band = Model(Eband1_cuprate, Tetra(), 'cuprate_single_band')
+cuprate_single_band = Model(Eband_cuprate, Tetra(), 'cuprate_single_band')
 # Note that these factors should be multiplied by t_ij**2
 cuprate_single_band.jfactors = (jfact1, jfact2, jfact3)
 cuprate_single_band.hfactors_left = hlist
@@ -157,7 +157,7 @@ cuprate_single_band.V = 0        # initialize nearest neighbour interaction
 cuprate_single_band.Vnn = 0     # initialize next nearest neighbour
 cuprate_single_band.vbasis = None   # to be used in gRPA
 
-hexa_single_band = Model(Eband1_hexa, Hexa(), 'hexa_single_band')
+hexa_single_band = Model(Eband_hexa, Hexa(), 'hexa_single_band')
 cuprate_three_band = Model(Eband_cuprate_three_band, Tetra(), 'cuprate_three_band', 3, Ematrix_cuprate_three_band)
 cuprate_four_band_LCO = Model(Eband_LCO_four_band, Tetra(), 'cuprate_four_band_LCO', 4, Ematrix_LCO_four_band)
 

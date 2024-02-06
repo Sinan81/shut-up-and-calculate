@@ -89,8 +89,8 @@ class Chi:
         """
         eFermi: float
         eFermi = self.system.eFermi
-        Ek = self.system.Eband1(kx, ky)
-        Ekq = self.system.Eband1(kx + qx, ky + qy)
+        Ek = self.system.Eband(kx, ky)
+        Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
         Ecutoff = 1.0 * kT
         if abs(Ek - Ekq) < Ecutoff:
@@ -115,8 +115,8 @@ class Chi:
 
         eFermi: float
         eFermi = self.system.eFermi
-        Ek = self.system.Eband1(kx, ky)
-        Ekq = self.system.Eband1(kx + qx, ky + qy)
+        Ek = self.system.Eband(kx, ky)
+        Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
         Ecutoff = 1.0 * kT
         if abs(Ek - Ekq) < Ecutoff:
@@ -499,8 +499,8 @@ class ChiCurrent(Chi):
 
         eFermi: float
         eFermi = self.system.eFermi
-        Ek = self.system.Eband1(kx, ky)
-        Ekq = self.system.Eband1(kx + qx, ky + qy)
+        Ek = self.system.Eband(kx, ky)
+        Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
         Ecutoff = 1.0 * kT
         if abs(Ek - Ekq) < Ecutoff:

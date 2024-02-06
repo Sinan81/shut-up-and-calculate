@@ -36,7 +36,7 @@ kT = 0.01
 
 
 @jit(nopython=True)
-def Eband1_hexa(kx, ky):
+def Eband_hexa(kx, ky):
     """
     make energy matrix
     """
@@ -60,7 +60,7 @@ def Eband1_hexa(kx, ky):
 
 
 @jit(nopython=True)
-def Eband1_cuprate(kx, ky):
+def Eband_cuprate(kx, ky):
     """
     make cuprate energy matrix:
     Tetra system with d-wave orbitals

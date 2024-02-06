@@ -56,7 +56,7 @@ class System:
     def __init__(self, model=cuprate_single_band, filling=None):
         self.model = model
         self.crystal = model.crystal
-        self.Eband1 = model.Eband
+        self.Eband = model.Eband
         self.filling = filling if filling else model.rank-0.55
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
@@ -66,10 +66,10 @@ class System:
 
     def get_default_eband(self):
         if self.crystal is Tetra:
-            return Eband1_cuprate
+            return Eband_cuprate
 
     def make_Eall1(self, X, Y):
-        veband = np.vectorize(self.Eband1)
+        veband = np.vectorize(self.Eband)
         xx,yy = np.meshgrid(X,Y)
         Eall = veband(xx,yy)
         return Eall
@@ -162,7 +162,7 @@ class System:
         Y = np.arange(kmin, kmax, 0.1)
         xx, yy = np.meshgrid(X, Y)
 
-        veband = np.vectorize(self.Eband1)
+        veband = np.vectorize(self.Eband)
         Z = veband(xx, yy)
         cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
 
@@ -202,7 +202,7 @@ class System:
         xx, yy = np.meshgrid(X, Y)
 
 
-        veband = np.vectorize(self.Eband1)  # vectorize
+        veband = np.vectorize(self.Eband)  # vectorize
         if self.model.rank == 1: # single band
             Z = veband(xx, yy)
             if style == 'topview':
@@ -399,7 +399,7 @@ class System:
 
     def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5):
 
-        veband = np.vectorize(self.Eband1)  # vectorize
+        veband = np.vectorize(self.Eband)  # vectorize
 
         ncuts = len(self.crystal.sym_cuts)
         if withdos or withhos:
