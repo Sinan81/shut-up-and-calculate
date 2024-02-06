@@ -49,7 +49,7 @@ The energy band(s) can be plotted via:
 ```python
 from tba import *
 x = System()
-x.plot_bands1()
+x.plot_bands()
 ```
 giving
 

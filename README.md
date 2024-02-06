@@ -22,7 +22,7 @@ warnings.filterwarnings('ignore')
 from tba import *
 get_list_of_models()
 x = System(model=cuprate_single_band)
-x.plot_bands1()
+x.plot_bands()
 x.plot_Fermi_surface_contour()
 x.filling_vs_energy()
 # calculate charge susceptibility \chi_c

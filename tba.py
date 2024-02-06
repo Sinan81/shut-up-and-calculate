@@ -194,7 +194,7 @@ class System:
         return cx,cy
 
 
-    def plot_bands1(self, style='surf', isSaveFig=False, kmin=-pi, kmax=pi):
+    def plot_bands(self, style='surf', isSaveFig=False, kmin=-pi, kmax=pi):
 
         # plot all bands
         X = np.arange(kmin, kmax, 0.1)
@@ -503,7 +503,7 @@ if __name__ == "__main__":
     # default system is Tetra crystal with d-wave symmetry (cuprate)
     cupr = System()
     cupr.filling = 0.45
-    cupr.plot_bands1(isSaveFig=True)
+    cupr.plot_bands(isSaveFig=True)
     cupr.filling_vs_energy(isSaveFig=True)
     cupr.plot_Fermi_surface_contour(isSaveFig=True)
     #cupr.plot_chi_vs_q(isSaveFig=True)
