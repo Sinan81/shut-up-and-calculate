@@ -74,7 +74,7 @@ class System:
         Eall = veband(xx,yy)
         return Eall
 
-    def filling_vs_E1(self, isSaveFig=False):
+    def filling_vs_energy(self, isSaveFig=False):
         """
         Plot filling vs energy.
         Filling is density of states integrated up to a given energy level.
@@ -504,7 +504,7 @@ if __name__ == "__main__":
     cupr = System()
     cupr.filling = 0.45
     cupr.plot_bands1(isSaveFig=True)
-    cupr.filling_vs_E1(isSaveFig=True)
+    cupr.filling_vs_energy(isSaveFig=True)
     cupr.plot_Fermi_surface_contour(isSaveFig=True)
     #cupr.plot_chi_vs_q(isSaveFig=True)
 

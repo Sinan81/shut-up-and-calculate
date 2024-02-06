@@ -115,7 +115,7 @@ Static current susceptibility is calculated as
 ```python
 from tba import *
 x  = System()
-x.chij.calc_vs_q(plot_zone='Q1', shiftPlot=0,Nq=4,recalc=True)
+x.chij.calc_vs_q(plot_zone='Q1', shiftPlot=0, Nq=4, recalc=True)
 ```
 Detailed discussions and derivations will be provided at a later time.
 

@@ -24,7 +24,8 @@ get_list_of_models()
 x = System(model=cuprate_single_band)
 x.plot_bands1()
 x.plot_Fermi_surface_contour()
-x.filling_vs_E1()
+x.filling_vs_energy()
+# calculate charge susceptibility \chi_c
 x.chic.plot_vs_q()
 ```
 
