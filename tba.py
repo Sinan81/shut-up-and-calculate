@@ -180,7 +180,7 @@ class System:
         #    fig.colorbar(surf, shrink=0.5, aspect=5)
 
         # Draw first brilloin zone
-        self.crystal.overlay_FBZ()
+        self.crystal.overlay_FBZ(plt)
 
         if isSaveFig:
             plt.savefig(self.__name__ + "_fermi_surface.png")

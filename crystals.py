@@ -30,7 +30,7 @@ class Hexa:
         self.pc_ky_max =  4*pi/sqrt(3)
 
     @staticmethod
-    def overlay_FBZ():
+    def overlay_FBZ(plt):
         """
         Draw a hexagon. Rotated 30 degrees with respect to
         real space Weigner-Seitz cell
@@ -75,7 +75,7 @@ class Tetra:
         self.pc_ky_max =  pi
 
     @staticmethod
-    def overlay_FBZ():
+    def overlay_FBZ(plt):
         'Draw a tetra FBZ'
         hx = np.array([pi, -pi, -pi, pi, pi])
         hy = np.array([pi,  pi, -pi,-pi, pi])
