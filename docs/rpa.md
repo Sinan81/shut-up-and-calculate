@@ -2,7 +2,10 @@
 
 Within RPA, interacting $\chi$ is calculated via infinite Dyson summation of a subset of Feynman diagrams:
 ```math
-\chi = \chi_0 + \chi_0 U \chi_0 + \chi_0 U \chi_0 U \chi_0 + ... = \chi_0 + \chi_0 U \chi
+\begin{split}
+\chi & = \chi_0 + \chi_0 U \chi_0 + \chi_0 U \chi_0 U \chi_0 + ... \\
+     & = \chi_0 + \chi_0 U \chi
+\end{split}
 ```
 where $\chi_0$ is the bare susceptibility, $U$ is the interaction.
 Solving for $\chi$ gives:
