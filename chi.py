@@ -183,7 +183,10 @@ class Chi:
                 ax.set_ylabel('Intensity (unitless)')
 
 
-    def plot_along_sym_cuts(self, isSaveFig=False, num=3):
+    def plot_along_sym_cuts(self, num=3, isSaveFig=False):
+        """
+        num: number of points per cut (default 3)
+        """
 
         ncuts = len(self.system.crystal.sym_cuts) # exclude duplicate points
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
@@ -207,6 +210,7 @@ class Chi:
             plt.savefig(self.system.__name__ + '_chi_cuts.png')
         plt.show()
         return fig
+
 
     def run_npool(self,X,Y):
 
