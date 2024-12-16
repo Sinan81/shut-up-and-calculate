@@ -189,8 +189,8 @@ class Chi:
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
         axlist = [ax1, ax2, ax3]
 
-        self._calc_chi_cuts(ncuts,num)
-        self._plot_individual_chi_cuts(ncuts,num,axlist)
+        self._calc_cuts(ncuts,num)
+        self._plot_individual_cuts(ncuts,num,axlist)
 
         # indicate symmetry point labels
         fig.text(0.12, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
