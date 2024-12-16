@@ -277,8 +277,8 @@ class Chi:
                 Z, X, Y = self.bare
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
-                print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q(plot_zone=plot_zone)
+                print('Running self.calc_vs_q()...')
+                Z, X, Y = self.calc_vs_q(plot_zone=plot_zone)
 
         if chi_type == 'rpa':
             ttag='RPA susceptibility'
@@ -286,8 +286,8 @@ class Chi:
                 Z, X, Y = self.rpa
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
-                print('Running self.calc_chi_vs_q()...')
-                Z, X, Y = self.calc_chi_vs_q(rpa='direct_only', plot_zone=plot_zone)
+                print('Running self.calc_vs_q()...')
+                Z, X, Y = self.calc_vs_q(rpa='direct_only', plot_zone=plot_zone)
 
         matplotlib.use("TkAgg")
 
