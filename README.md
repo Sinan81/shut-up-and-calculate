@@ -50,6 +50,7 @@ The following references are recommended for topics discussed in this repository
 - Adaptive susceptibility plots using python adaptive or scikit-optimize
 - Mean field and broken symmetry calculations, and coexisting orders
 - pytests etc
+- speed up integration via [low-level callback functions](https://docs.scipy.org/doc/scipy/tutorial/integrate.html#faster-integration-using-low-level-callback-functions)
 
 
 # Example Visuals
