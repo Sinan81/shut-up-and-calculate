@@ -83,11 +83,7 @@ class System:
         """
 
         cell = self.crystal
-        dk = 0.1
-        # make 1d grids along x, y
-        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
-        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
-
+        X,Y = cell.get_kpoints(dk=0.1)
         Nk = X.size*Y.size;
 
         Eall = self.make_Eall1(X,Y)
@@ -115,10 +111,8 @@ class System:
         a given target filling.
         """
         cell = self.crystal
-        dk = 0.1
-        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
-        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
-        Nk = X.size*Y.size
+        X,Y = cell.get_kpoints(dk=0.1)
+        Nvol= X.size*Y.size
 
         if self.model.rank == 1:
             Eall = self.make_Eall1(X,Y)
@@ -137,7 +131,7 @@ class System:
         dn = 5 #initialize
         N_iter = 0
         while dn>tol and N_iter < 10:
-            density = self.filling1(Emid,Eall,Nk)
+            density = self.filling1(Emid,Eall,Nvol)
             #print(density)
             dn = abs(target_filling - density)
             if density > target_filling: #Emid is big
@@ -258,9 +252,7 @@ class System:
         """
 
         cell = self.crystal
-        dk = 2*pi/Nk
-        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
-        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
+        X,Y = cell.get_kpoints(Nk=Nk)
         Nk = X.size*Y.size
 
 
@@ -302,9 +294,7 @@ class System:
             fast = False
 
         cell = self.crystal
-        dk = 2*pi/Nk
-        X   = np.arange(cell.pc_kx_min, cell.pc_kx_max, dk)
-        Y   = np.arange(cell.pc_ky_min, cell.pc_ky_max, dk)
+        X,Y = cell.get_kpoints(Nk=Nk)
         Nk = X.size*Y.size
 
 
@@ -496,6 +486,7 @@ class System:
         g = x / (2.0 * kT)
         denom = 4.0 * kT * (np.cosh(g) ** 2)
         return -1.0 / denom
+
 
 if __name__ == "__main__":
     # supress all warnings. Advanced users might want to undo this.

@@ -29,6 +29,7 @@ class Hexa:
         self.pc_ky_min = -2*pi/sqrt(3)
         self.pc_ky_max =  4*pi/sqrt(3)
 
+
     @staticmethod
     def overlay_FBZ(plt):
         """
@@ -49,6 +50,20 @@ class Hexa:
         plt.legend(loc='best')
 
 
+    def get_kpoints(self,Nk=None,dk=None,isAFRBZ=False):
+        # Nk: number of k points along 1 dimension
+        # dk: k point grid size
+        if not dk:
+            dk = 2*pi/Nk
+
+        if isAFRBZ: # Reduced Brilloin Zone for AF and like wavevector Q=(pi,pi)
+            pass # TODO
+
+        X   = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
+        Y   = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
+        return X,Y
+
+
 class Tetra:
     """
     tetra crysctal specific stuff
@@ -58,6 +73,7 @@ class Tetra:
     X = (pi,0)
     M = (pi,pi)
     sym_cuts = ( (G,X), (X,M), (M,G))
+
 
     def __init__(self):
         self.integ_xmin = 0.0
@@ -74,6 +90,7 @@ class Tetra:
         self.pc_ky_min = -pi
         self.pc_ky_max =  pi
 
+
     @staticmethod
     def overlay_FBZ(plt):
         'Draw a tetra FBZ'
@@ -81,3 +98,18 @@ class Tetra:
         hy = np.array([pi,  pi, -pi,-pi, pi])
         plt.plot(hx/pi,hy/pi, label='FBZ')
         plt.legend(loc='best')
+
+
+    def get_kpoints(self,Nk=None,dk=None,isAFRBZ=False):
+        # Nk: number of k points along 1 dimension
+        # dk: k point grid size
+        if not dk:
+            dk = 2*pi/Nk
+
+        if isAFRBZ: # Reduced Brilloin Zone for AF and like wavevector Q=(pi,pi)
+            pass # TODO
+
+        X   = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
+        Y   = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
+        return X,Y
+
