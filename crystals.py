@@ -59,9 +59,10 @@ class Hexa:
         if isAFRBZ: # Reduced Brilloin Zone for AF and like wavevector Q=(pi,pi)
             pass # TODO
 
-        X   = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
-        Y   = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
-        return X,Y
+        lkx = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
+        lky = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
+        xx,yy = np.meshgrid(lkx,lky)
+        return xx,yy
 
 
 class Tetra:
