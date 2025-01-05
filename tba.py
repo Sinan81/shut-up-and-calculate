@@ -68,9 +68,9 @@ class System:
         if self.crystal is Tetra:
             return Eband_cuprate
 
-    def make_Eall1(self, X, Y):
+    def make_Eall1(self, xx, yy):
         veband = np.vectorize(self.Eband)
-        xx,yy = np.meshgrid(X,Y)
+        # xx,yy are meshgrids
         Eall = veband(xx,yy)
         return Eall
 
@@ -84,7 +84,7 @@ class System:
 
         cell = self.crystal
         X,Y = cell.get_kpoints(dk=0.1)
-        Nk = X.size*Y.size;
+        Nk = X.size # X is a meshgrid
 
         Eall = self.make_Eall1(X,Y)
         Emin = Eall.min()
@@ -112,7 +112,7 @@ class System:
         """
         cell = self.crystal
         X,Y = cell.get_kpoints(dk=0.1)
-        Nvol= X.size*Y.size
+        Nvol= X.size # X is meshgrid
 
         if self.model.rank == 1:
             Eall = self.make_Eall1(X,Y)
@@ -253,7 +253,7 @@ class System:
 
         cell = self.crystal
         X,Y = cell.get_kpoints(Nk=Nk)
-        Nk = X.size*Y.size
+        Nk = X.size
 
 
         if self.model.rank == 1:
@@ -295,7 +295,7 @@ class System:
 
         cell = self.crystal
         X,Y = cell.get_kpoints(Nk=Nk)
-        Nk = X.size*Y.size
+        Nk = X.size
 
 
         if self.model.rank == 1:

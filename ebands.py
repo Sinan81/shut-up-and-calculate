@@ -156,10 +156,8 @@ def Eband_cuprate_three_band(kx,ky,iband=1,em=Ematrix_cuprate_three_band):
     vl = np.sort(vl)
     return vl[iband]
 
-def make_Eall(X,Y,func_em):
-    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
-    Eall  = np.zeros((vl.size, X.size*Y.size));
-    Evecs = np.zeros((vl.size**2, X.size*Y.size));
+def make_Eall(xx,yy,func_em):
+    # xx, yy are meshgrids for kx, ky
     # These naive for loops should be replaced with a more performant logic
     # While numpy vectorize worked nicely for getting eigenvalues (one band at a time!)
     # It caused complications in terms of getting eigenvectors as well.
@@ -168,18 +166,20 @@ def make_Eall(X,Y,func_em):
     # - try parallellizing with multiprocess map
     # - try using numba
     i = 0
-    for kx in X:
-        for ky in Y:
-            vl,vc = np.linalg.eig(func_em(kx,ky))
-            Eall[:,i] = vl
-            Evecs[:,i] = vc.flatten()
-            i = i +1
+    points = list(zip(xx.ravel(), yy.ravel()))
+    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
+    Eall  = np.zeros((vl.size, len(points)));
+    Evecs = np.zeros((vl.size**2, len(points)));
+    for point in points:
+        kx,ky = point
+        vl,vc = np.linalg.eig(func_em(kx,ky))
+        Eall[:,i] = vl
+        Evecs[:,i] = vc.flatten()
+        i = i +1
     return Eall
 
-def get_Evecs(X,Y,func_em):
-    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
-    Eall  = np.zeros((vl.size, X.size*Y.size));
-    Evecs = np.zeros((vl.size**2, X.size*Y.size));
+def get_Evecs(xx,yy,func_em):
+    # xx, yy are meshgrids for kx, ky
     # These naive for loops should be replaced with a more performant logic
     # While numpy vectorize worked nicely for getting eigenvalues (one band at a time!)
     # It caused complications in terms of getting eigenvectors as well.
@@ -188,12 +188,16 @@ def get_Evecs(X,Y,func_em):
     # - try parallellizing with multiprocess map
     # - try using numba
     i = 0
-    for kx in X:
-        for ky in Y:
-            vl,vc = np.linalg.eig(func_em(kx,ky))
-            Eall[:,i] = vl
-            Evecs[:,i] = vc.flatten()
-            i = i +1
+    points = list(zip(xx.ravel(), yy.ravel()))
+    vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
+    Eall  = np.zeros((vl.size, len(points)));
+    Evecs = np.zeros((vl.size**2, len(points)));
+    for point in points:
+        kx,ky = point
+        vl,vc = np.linalg.eig(func_em(kx,ky))
+        Eall[:,i] = vl
+        Evecs[:,i] = vc.flatten()
+        i = i +1
     return Evecs
 
 
