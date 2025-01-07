@@ -86,7 +86,11 @@ class System:
         X,Y = cell.get_kpoints(dk=0.1)
         Nk = X.size # X is a meshgrid
 
-        Eall = self.make_Eall1(X,Y)
+        if self.model.rank == 1:
+            Eall = self.make_Eall1(X,Y)
+        else:
+            Eall = make_Eall(X,Y, self.model.Ematrix)
+            Eall = np.sort(Eall)
         Emin = Eall.min()
         Emax = Eall.max()
 
