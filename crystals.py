@@ -100,6 +100,14 @@ class Tetra:
         plt.plot(hx/pi,hy/pi, label='FBZ')
         plt.legend(loc='best')
 
+    @staticmethod
+    def overlay_RBZ(plt):
+        'Draw an AF RBZ'
+        hx = np.array([pi, 0, -pi, 0,  pi])
+        hy = np.array([0,  pi, 0, -pi, 0])
+        plt.plot(hx/pi,hy/pi, label='RBZ')
+        plt.legend(loc='best')
+
 
     def get_kpoints(self,Nk=None,dk=None,isAFRBZ=False):
         # Nk: number of k points along 1 dimension
@@ -108,10 +116,12 @@ class Tetra:
             dk = 2*pi/Nk
 
         if isAFRBZ: # Reduced Brilloin Zone for AF and like wavevector Q=(pi,pi)
-            pass # TODO
+            # TODO: first create a half size regular BZ, then rotate 45
+            pass
 
         lkx = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
         lky = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
         xx,yy = np.meshgrid(lkx,lky)
         return xx,yy
+
 

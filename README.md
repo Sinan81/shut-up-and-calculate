@@ -44,6 +44,8 @@ The following references are recommended for topics discussed in this repository
 
 [Random Phase Approximation (RPA)](docs/rpa.md)
 
+[D-density-wave (DDW)](docs/ddw.md)
+
 # To-Do
 - Multiband susceptibility
 - Extended RPA (with ladder diagrams and non-local interactions)

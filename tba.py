@@ -57,7 +57,7 @@ class System:
         self.model = model
         self.crystal = model.crystal
         self.Eband = model.Eband
-        self.filling = filling if filling else model.rank-0.55
+        self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
@@ -67,6 +67,19 @@ class System:
     def get_default_eband(self):
         if self.crystal is Tetra:
             return Eband_cuprate
+
+    def set_filling(self, filling):
+
+        if not filling:
+            if hasattr(self.model,'isAFRBZ'):
+                # account for double counting in AF RBZ system
+                return self.model.rank - 1
+            else: # normal system
+                return self.model.rank - 0.5
+        else:
+            if hasattr(self.model, 'isAFRBZ'):
+                print("target filling is: ", filling,"/",self.model.rank,'=', filling/self.model.rank)
+            return filling
 
     def make_Eall1(self, xx, yy):
         veband = np.vectorize(self.Eband)
@@ -114,6 +127,7 @@ class System:
         This function calculates the fermi level corresponding to
         a given target filling.
         """
+
         cell = self.crystal
         X,Y = cell.get_kpoints(dk=0.1)
         Nvol= X.size # X is meshgrid
@@ -179,6 +193,9 @@ class System:
 
         # Draw first brilloin zone
         self.crystal.overlay_FBZ(plt)
+        if hasattr(self.model,'isAFRBZ'):
+            self.crystal.overlay_RBZ(plt)
+
 
         if isSaveFig:
             plt.savefig(self.__name__ + "_fermi_surface.png")
@@ -391,7 +408,7 @@ class System:
 
         return aomg,ados,ados_orb
 
-    def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5):
+    def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5, num=50):
 
         veband = np.vectorize(self.Eband)  # vectorize
 
@@ -407,8 +424,8 @@ class System:
         # make points along the cuts
         for i in range(0, ncuts):
             p1,p2 = self.crystal.sym_cuts[i]
-            lkx = np.linspace(p1[0], p2[0])
-            lky = np.linspace(p1[1], p2[1])
+            lkx = np.linspace(p1[0], p2[0], num=num)
+            lky = np.linspace(p1[1], p2[1], num=num)
             ax = axlist[i]
             ax.axhline(self.eFermi, color='k', ls='--')
             if self.model.rank == 1: # single band
@@ -451,7 +468,10 @@ class System:
         plt.subplots_adjust(wspace=0)
         # set figure title
         ttxt=' '.join(self.model.__name__.split('_'))
-        tfill=' (filling='+"{:.2f}".format(self.filling)+')'
+        if hasattr(self.model,'isAFRBZ'):
+            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank)
+        else:
+            tfill=' (filling='+"{:.2f}".format(self.filling)+')'
         ttxt=ttxt + tfill
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:

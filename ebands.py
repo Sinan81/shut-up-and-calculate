@@ -13,7 +13,7 @@ import warnings
 # numba results in 30x speed up!!!
 from numba import jit
 import numba
-from numpy import pi, sqrt
+from numpy import pi, sqrt, cos, sin
 import numpy as np
 import scipy.integrate as integrate
 from scipy.integrate import dblquad
@@ -202,6 +202,40 @@ def get_Evecs(xx,yy,func_em):
 
 
 def eband(kx,ky,iband,em):
+    """
+    make energy bands
+    """
+    vl,vc = np.linalg.eig(em(kx,ky))
+    vl = np.sort(vl)
+    return vl[iband]
+
+
+def Ematrix_tetra_single_band_ddw(kx,ky):
+    """
+    make energy matrix
+    """
+    # Reference:
+    # Spin and Current Correlation Functions in the d-density Wave State of the Cuprates
+    # Tewari et al 2001, https://arxiv.org/abs/cond-mat/0101027
+    t=0.3
+    tp=0.3*t
+    Ek = -2*t*(cos(kx) + cos(ky)) + 4*tp*cos(kx)*cos(ky)
+    kQx = kx + pi
+    kQy = ky + pi
+    EkQ = -2*t*(cos(kQx) + cos(kQy)) + 4*tp*cos(kQx)*cos(kQy)
+    W0=0.02
+    Wk = W0*0.5*(cos(kx) - cos(ky))
+    ic = np.complex(0,1)
+
+    # basis: c_k, c_{k+Q} where Q=(\pi,\pi)
+    m = np.matrix([
+            [ Ek,       1j*Wk ],
+            [ -1j*Wk,   EkQ    ]
+            ])
+    return m
+
+
+def Eband_tetra_single_band_ddw(kx,ky,iband=1,em=Ematrix_tetra_single_band_ddw):
     """
     make energy bands
     """
