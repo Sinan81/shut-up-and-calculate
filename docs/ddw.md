@@ -10,23 +10,23 @@ $$ \mathbf{H} = \left [
 \begin{matrix}
 E(\mathbf{k}) & iW(\mathbf{k}) \\
 -i W(\mathbf{k}) & E(\mathbf{k+Q})
-\end{matrix} 
+\end{matrix}
 \right ]
 $$
 
-where the basis is $\{c^\dagger_k, c^\dagger_{k+Q}\}$, 
+where the basis is $\{c^\dagger_k, c^\dagger_{k+Q}\}$,
 
-$$ 
+$$
 E(\mathbf{k}) = -2 t \left ( \cos(k_x) + \cos(k_y) \right) + 4t\prime\cos(k_x)\cos(k_y)
-$$ 
+$$
 
-$t$ is nearest neighbout tunneling, $t\prime$ is the next nearest neighbour tunneling, and $W(\mathbf{k}) = W_0 \left ( \cos(k_x) - \cos(k_y) \right)$. 
+$t$ is nearest neighbout tunneling, $t\prime$ is the next nearest neighbour tunneling, and $W(\mathbf{k}) = W_0 \left ( \cos(k_x) - \cos(k_y) \right)$.
 
 DDW opens a gap around $X=(\pi,0)$ point as shown below:
 ```python
 from tba import *
 ddw = System(model=tetra_single_band_ddw,filling=1.4)
-s.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200) 
+ddw.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200)
 ```
 
 ![](/images/tetra/tetra_single_band_ddw_energy_band_cuts.png)
