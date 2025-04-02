@@ -24,7 +24,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from pathos.multiprocessing import ProcessingPool as PPool
 
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
 
 # set npool to number of cpus/threads the machine has
 ncpus = len(os.sched_getaffinity(0))
