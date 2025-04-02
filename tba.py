@@ -165,13 +165,20 @@ class System:
         return Emid
 
 
-    def plot_Fermi_surface_contour(self, isSaveFig=False, kmin=-2*pi, kmax=2*pi):
+    def plot_Fermi_surface_contour(self, isSaveFig=False, isExtendedZone=False, dk=0.1, isShow=True):
 
         # plot all bands
         fig = plt.figure()
         ax = fig.gca()
-        X = np.arange(kmin, kmax, 0.1)
-        Y = np.arange(kmin, kmax, 0.1)
+        if isExtendedZone:
+            kmin=-2*pi
+            kmax=2*pi
+        else:
+            kmin=-pi
+            kmax=pi
+
+        X = np.arange(kmin, kmax, dk)
+        Y = np.arange(kmin, kmax, dk)
         xx, yy = np.meshgrid(X, Y)
 
         veband = np.vectorize(self.Eband)
@@ -199,7 +206,8 @@ class System:
 
         if isSaveFig:
             plt.savefig(self.__name__ + "_fermi_surface.png")
-        plt.show()
+        if isShow:
+            plt.show()
 
         for item in cs.collections:
             for i in item.get_paths():
