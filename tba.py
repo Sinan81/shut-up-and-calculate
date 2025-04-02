@@ -31,7 +31,7 @@ warnings.filterwarnings('ignore')
 from models import *
 from chi import *
 
-#matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 
 # set npool to number of cpus/threads the machine has
 ncpus = len(os.sched_getaffinity(0))
