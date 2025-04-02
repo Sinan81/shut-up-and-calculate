@@ -5,9 +5,9 @@ dependencies:
   - matplotlib=3.7.1
   - numba=0.56.4
   - numpy=1.23.5
-  - python=3.10.9
+  - python=3.10
   - scipy=1.10.0
-  - tk=8.6.12
+  - tk
   - pip:
       - dill==0.3.6
       - multiprocess==0.70.14
