@@ -29,8 +29,7 @@ x.filling_vs_energy()
 x.chic.plot_vs_q()
 ```
 
-[![Pytest ](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/python-package-conda.yml)
-
+[![Pytest CI](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml/badge.svg)](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml)
 
 # References
 The following references are recommended for topics discussed in this repository:
