@@ -35,7 +35,7 @@ def test_susceptibility_charge_real_static():
 
 
 # multi band
-def test_fermi_surface():
+def test_fermi_surface_tetra_three_band():
     x = System(model=cuprate_three_band,filling=2.40)
     fs = x.plot_Fermi_surface_contour(isExtendedZone=False, dk=np.pi/10,isShow=False)
     # expected Fermi surface segments
@@ -47,6 +47,6 @@ def test_fermi_surface():
             0.6       , 0.5826423 , 0.5       , 0.46873861, 0.4       ,
             0.36986394, 0.3       , 0.28383914, 0.20846123, 0.2       ,
             0.1349657 , 0.1       , 0.06914328])
-
     assert np.allclose(fs[0], cx_ref)
     assert np.allclose(fs[1], cy_ref)
+

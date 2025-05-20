@@ -33,4 +33,5 @@ jobs:
         MPLBACKEND: Agg
       run: |
         conda install pytest
+        cd src
         python -m pytest
