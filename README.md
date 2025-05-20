@@ -29,6 +29,9 @@ x.filling_vs_energy()
 x.chic.plot_vs_q()
 ```
 
+[![Pytest ](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/python-package-conda.yml)
+
+
 # References
 The following references are recommended for topics discussed in this repository:
 * Piers Coleman, Introduction to Many Body Physics, 2015, Cambridge University Press
