@@ -1,3 +1,5 @@
+[![Pytest CI](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml/badge.svg)](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml)
+
 This project is about plotting various standard properties of 2-dimensional tight-binding hamiltonians.
 
 Keywords: computational condensed matter physics, Fermi surface, tight binding approximation, energy bands, cuprates, two-dimensional systems, many body physics
@@ -28,8 +30,6 @@ x.filling_vs_energy()
 # calculate charge susceptibility \chi_c
 x.chic.plot_vs_q()
 ```
-
-[![Pytest CI](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml/badge.svg)](https://github.com/Sinan81/shut-up-and-calculate/actions/workflows/pytest_ci.yml)
 
 # References
 The following references are recommended for topics discussed in this repository:
