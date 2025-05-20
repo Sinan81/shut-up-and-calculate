@@ -70,7 +70,6 @@ class System:
             return Eband_cuprate
 
     def set_filling(self, filling):
-
         if not filling:
             if hasattr(self.model,'isAFRBZ'):
                 # account for double counting in AF RBZ system
@@ -183,8 +182,13 @@ class System:
         xx, yy = np.meshgrid(X, Y)
 
         veband = np.vectorize(self.Eband)
-        Z = veband(xx, yy)
-        cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        if self.model.rank == 1: # single band
+            Z = veband(xx, yy)
+            cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        else: # multi band
+            for iband in range(0,self.model.rank):
+                Z = veband(xx, yy, iband=iband)
+                cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
 
         ax.set_xlim(kmin/pi, kmax/pi)
         ax.set_ylim(kmin/pi, kmax/pi)

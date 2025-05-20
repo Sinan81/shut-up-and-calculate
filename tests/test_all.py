@@ -32,3 +32,21 @@ def test_susceptibility_charge_real_static():
     chi_ref = 0.21320053290009247
     chi = x.chic.real_static(q)
     assert np.allclose(chi, chi_ref)
+
+
+# multi band
+def test_fermi_surface():
+    x = System(model=cuprate_three_band,filling=2.40)
+    fs = x.plot_Fermi_surface_contour(isExtendedZone=False, dk=np.pi/10,isShow=False)
+    # expected Fermi surface segments
+    cx_ref = np.array([0.06914328, 0.1       , 0.1349657 , 0.2       , 0.20846123,
+            0.28383914, 0.3       , 0.36986394, 0.4       , 0.46873861,
+            0.5       , 0.5826423 , 0.6       , 0.7       , 0.71545476,
+            0.8       , 0.87557624, 0.9       ])
+    cy_ref = np.array([0.9       , 0.87557624, 0.8       , 0.71545476, 0.7       ,
+            0.6       , 0.5826423 , 0.5       , 0.46873861, 0.4       ,
+            0.36986394, 0.3       , 0.28383914, 0.20846123, 0.2       ,
+            0.1349657 , 0.1       , 0.06914328])
+
+    assert np.allclose(fs[0], cx_ref)
+    assert np.allclose(fs[1], cy_ref)
