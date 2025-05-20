@@ -23,7 +23,7 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from pathos.multiprocessing import ProcessingPool as PPool
-import pysnooper
+#import pysnooper
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -31,7 +31,8 @@ warnings.filterwarnings('ignore')
 from models import *
 from chi import *
 
-matplotlib.use("TkAgg")
+if os.environ.get('MPLBACKEND') is None:
+    matplotlib.use("TkAgg")
 
 # set npool to number of cpus/threads the machine has
 ncpus = len(os.sched_getaffinity(0))

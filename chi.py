@@ -23,14 +23,14 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from pathos.multiprocessing import ProcessingPool as PPool
-import pysnooper
+#import pysnooper
 
 import warnings
 warnings.filterwarnings('ignore')
 
 from models import *
 
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
 
 # set npool to number of cpus/threads the machine has
 ncpus = len(os.sched_getaffinity(0))
@@ -293,7 +293,7 @@ class Chi:
                 print('Running self.calc_vs_q()...')
                 Z, X, Y = self.calc_vs_q(rpa='direct_only', plot_zone=plot_zone)
 
-        matplotlib.use("TkAgg")
+        #matplotlib.use("TkAgg")
 
         # normalise axes
         X = X / pi
