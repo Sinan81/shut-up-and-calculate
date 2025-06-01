@@ -14,10 +14,3 @@ class Model:
         self.hfactors_left = None # individual contribtions to a current sus factor along a bond
         self.hfactors_right = None
         self.gbasis   = None # used in calculating exchange interaction contributions
-
-def get_list_of_models():
-    print('List of all models:')
-    print('====================')
-    for x in globals():
-        if type(eval(x)) == Model:
-            print(x)

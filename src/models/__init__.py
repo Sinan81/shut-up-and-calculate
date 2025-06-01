@@ -11,5 +11,5 @@ __all__ = [ 'Model',
             'cuprate_three_band',
             'cuprate_four_band_LCO',
             'hexa_single_band',
-            'tetra_single_band_ddw'
+            'tetra_single_band_ddw',
             ]

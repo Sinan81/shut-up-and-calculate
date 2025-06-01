@@ -31,6 +31,7 @@ warnings.filterwarnings('ignore')
 from models import *
 from chi import *
 from ebands import *
+from util import *
 
 if os.environ.get('MPLBACKEND') is None:
     matplotlib.use("TkAgg")
