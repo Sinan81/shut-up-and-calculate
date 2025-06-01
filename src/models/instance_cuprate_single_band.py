@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from .model import Model
 from crystals import Tetra, Hexa
 from ebands import *
 from numpy import cos, sin, exp
@@ -120,28 +121,13 @@ def g3(k):
 def g4(k):
     return sin(k[1])
 
+def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
+    return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
+
 # current operator goes like J ~ c1*c2 - c2*c1, hence the pairs of h factors.
 #hlist = [ (h1a, h1b), (h2a,h2b), (h3a,h3b), (h4a,h4b) ]
 hlist = [ (h1a, h1b), (h2a,h2b)]
 hlist_right = [ (h1a_right, h1b_right), (h2a_right, h2b_right) ]
-
-
-def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
-    return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
-
-
-class Model:
-    # Associate energy band & the crystal for convenience
-    def __init__(self, Eband, crystal, name, rank=1, Ematrix=None):
-        self.Eband = Eband
-        self.Ematrix = Ematrix # only used in multiband calculations
-        self.rank = rank # single or multi dim
-        self.crystal = crystal
-        self.__name__ = name
-        self.jfactors = None # hand derived current sus factor
-        self.hfactors_left = None # individual contribtions to a current sus factor along a bond
-        self.hfactors_right = None
-        self.gbasis   = None # used in calculating exchange interaction contributions
 
 
 # List of models
@@ -156,33 +142,3 @@ cuprate_single_band.U = 0         # initialize local interaction
 cuprate_single_band.V = 0        # initialize nearest neighbour interaction
 cuprate_single_band.Vnn = 0     # initialize next nearest neighbour
 cuprate_single_band.vbasis = None   # to be used in gRPA
-
-
-hexa_single_band = Model(Eband_hexa, Hexa(), 'hexa_single_band')
-
-cuprate_three_band = Model(Eband_cuprate_three_band,
-                        Tetra(),
-                        'cuprate_three_band',
-                        3,
-                        Ematrix_cuprate_three_band)
-
-cuprate_four_band_LCO = Model(Eband_LCO_four_band,
-                            Tetra(),
-                            'cuprate_four_band_LCO',
-                            4,
-                            Ematrix_LCO_four_band)
-
-tetra_single_band_ddw = Model(Eband_tetra_single_band_ddw,
-                            Tetra(),
-                            'tetra_single_band_ddw',
-                            2,
-                            Ematrix_tetra_single_band_ddw
-                            )
-tetra_single_band_ddw.isAFRBZ=True
-
-def get_list_of_models():
-    print('List of all models:')
-    print('====================')
-    for x in globals():
-        if type(eval(x)) == Model:
-            print(x)
