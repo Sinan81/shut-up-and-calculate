@@ -65,12 +65,10 @@ class System:
         if not filling:
             if hasattr(self.model,'isAFRBZ'):
                 # account for double counting in AF RBZ system
-                return self.model.rank - 1
+                return self.model.rank/2 - 0.5
             else: # normal system
                 return self.model.rank - 0.5
         else:
-            if hasattr(self.model, 'isAFRBZ'):
-                print("target filling is: ", filling,"/",self.model.rank,'=', filling/self.model.rank)
             return filling
 
     def make_Eall1(self, xx, yy):
@@ -88,8 +86,14 @@ class System:
         """
 
         cell = self.crystal
-        X,Y = cell.get_kpoints(dk=0.1)
-        Nk = X.size # X is a meshgrid
+        if hasattr(self.model,'isAFRBZ'):
+            X,Y = cell.get_kpoints(dk=0.1, isAFRBZ=True)
+            # total number of k points is twice as much in the reduced RBZ zone.
+            # Hence multiply by 2
+            Nk = 2*X.size # X is a meshgrid
+        else:
+            X,Y = cell.get_kpoints(dk=0.1)
+            Nk =  X.size # X is a meshgrid
 
         if self.model.rank == 1:
             Eall = self.make_Eall1(X,Y)
@@ -121,8 +125,14 @@ class System:
         """
 
         cell = self.crystal
-        X,Y = cell.get_kpoints(dk=0.1)
-        Nvol= X.size # X is meshgrid
+        if hasattr(self.model,'isAFRBZ'):
+            X,Y = cell.get_kpoints(dk=0.1, isAFRBZ=True)
+            # total number of k points is twice as much in the reduced RBZ zone.
+            # Hence multiply by 2
+            Nvol = 2*X.size # X is a meshgrid
+        else:
+            X,Y = cell.get_kpoints(dk=0.1)
+            Nvol =  X.size # X is a meshgrid
 
         if self.model.rank == 1:
             Eall = self.make_Eall1(X,Y)

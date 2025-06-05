@@ -2,6 +2,7 @@
 
 from numpy import pi, sqrt
 import numpy as np
+from util import rotate_meshgrid
 
 class Hexa:
     """
@@ -116,12 +117,14 @@ class Tetra:
             dk = 2*pi/Nk
 
         if isAFRBZ: # Reduced Brilloin Zone for AF and like wavevector Q=(pi,pi)
-            # TODO: first create a half size regular BZ, then rotate 45
-            pass
+            # when rotate by 45degrees, AF RBZ becomes a square of size sqrt(2)/2
+            lkx = np.pi*np.arange(-np.sqrt(2)/2, np.sqrt(2)/2, dk)
+            lky = np.pi*np.arange(-np.sqrt(2)/2, np.sqrt(2)/2, dk)
+            xx,yy = np.meshgrid(lkx,lky)
+            Xr,Yr = rotate_meshgrid(xx,yy)
+            return Xr,Yr
 
         lkx = np.arange(self.pc_kx_min, self.pc_kx_max, dk)
         lky = np.arange(self.pc_ky_min, self.pc_ky_max, dk)
         xx,yy = np.meshgrid(lkx,lky)
         return xx,yy
-
-
