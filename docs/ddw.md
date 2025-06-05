@@ -25,7 +25,7 @@ $t$ is nearest neighbout tunneling, $t\prime$ is the next nearest neighbour tunn
 DDW opens a gap around $X=(\pi,0)$ point as shown below:
 ```python
 from tba import *
-ddw = System(model=tetra_single_band_ddw,filling=1.4)
+ddw = System(model=tetra_single_band_ddw)
 ddw.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200)
 ```
 
