@@ -31,6 +31,9 @@ ddw.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200)
 
 ![](/images/tetra/tetra_single_band_ddw_energy_band_cuts.png)
 
+Accordingly, the Fermi surface is modified by DDW in a way similar to the pseudogap phase.
+![](/images/tetra/tetra_single_band_ddw_fermi_surface)
+
 # References
 Hidden Order in Cuprates, Chakravarty et al 2000, [https://arxiv.org/abs/cond-mat/0005443]
 

@@ -484,9 +484,10 @@ class System:
         # set figure title
         ttxt=' '.join(self.model.__name__.split('_'))
         if hasattr(self.model,'isAFRBZ'):
-            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank)
+            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank/2)
         else:
-            tfill=' (filling='+"{:.2f}".format(self.filling)+')'
+            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank)
+            #tfill=' (filling='+"{:.2f}".format(self.filling)+')'
         ttxt=ttxt + tfill
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:
