@@ -209,20 +209,3 @@ class Spectra:
             plt.show()
 
         #return aomg,ados,ados_orb
-
-
-
-if __name__ == "__main__":
-    # supress all warnings. Advanced users might want to undo this.
-    warnings.filterwarnings('ignore')
-    # default system is Tetra crystal with d-wave symmetry (cuprate)
-    cupr = System()
-    cupr.filling = 0.45
-    cupr.plot_bands(isSaveFig=True)
-    cupr.filling_vs_energy(isSaveFig=True)
-    cupr.plot_Fermi_surface_contour(isSaveFig=True)
-    #cupr.plot_chi_vs_q(isSaveFig=True)
-
-    # A hexa example
-    hexa = System(hexa_single_band)
-    hexa.plot_Fermi_surface_contour()
