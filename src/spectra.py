@@ -29,6 +29,7 @@ class Spectra:
 
         if self.system.model.rank == 1:
             Eall = self.system.make_Eall1(X,Y)
+            Evecs = None
         else: # multi band
             Eall = make_Eall(X,Y,self.system.model.Ematrix)
             Eall.flatten()
