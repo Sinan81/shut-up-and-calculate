@@ -33,6 +33,14 @@ def test_susceptibility_charge_real_static():
     chi = x.chic.real_static(q)
     assert np.allclose(chi, chi_ref)
 
+def test_susceptibility_current_real_static():
+    # very heavy computation so just pick a single point to calculate
+    x = System()
+    chi_ref = 0.1500234000455209
+    out = x.chij.calc_vs_q(Nq=1)
+    chi = np.real(out[0][0][0][0])
+    assert np.allclose(chi, chi_ref)
+
 
 # multi band
 def test_fermi_surface_tetra_three_band():
