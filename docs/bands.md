@@ -48,7 +48,7 @@ H_0(\mathbf k) = \epsilon - 2t\left( \cos k_x + \cos k_y\right)
 The energy band(s) can be plotted via:
 ```python
 from tba import *
-x = System()
+x = CuprateSingleBand()
 x.plot_bands()
 ```
 giving
@@ -58,7 +58,7 @@ giving
 It's often convenient to instead look at energy bands along certain 3D cuts:
 ```python
 from tba import *
-x = System(model=cuprate_three_band)
+x = CuprateThreeBand()
 x.plot_bands_along_sym_cuts()
 ```
 
@@ -69,7 +69,7 @@ One can also do: "x.plot_bands_along_sym_cuts(withhos=True)" to plot density of 
 Many properties of a solid state system is determined by the so called Fermi surface, hence one can plot this as:
 ```python
 from tba import *
-x = System()
+x = CuprateSingleBand()
 x.plot_Fermi_surface_contour()
 ```
 where default filling is number of orbitals minus 0.4. Other filling can be specified by passing filling option. Hence, for single band cuprate system the Fermi surface is:
@@ -83,7 +83,7 @@ By default, the Fermi surface is plotted in the extended zone with First Brilloi
 DoS is simply a histogram of energy levels: number of energy levels in a given $dE$ interval. DoS appears in many physical properties of a system, and can be measured experimentally. Below we show literally a histogram plot of energy levels in single band cuprate system:
 ```python
 from tba import *
-x = System()
+x = CuprateSingleBand()
 x.histogram_of_states()
 ```
 ![](/images/tetra/cuprate_single_band_histogram_of_states.png)
@@ -96,7 +96,7 @@ where $\gamma$ is a small broadenning parameter, such as $\gamma=0.05$.
 Hence DoS can be plotted as:
 ```python
 from tba import *
-x = System()
+x = CuprateSingleBand()
 x.density_of_states()
 ```
 ![](/images/tetra/cuprate_single_band_density_of_states.png)
@@ -107,7 +107,7 @@ For a given vector, the norm of the i'th element yields contribution from i'th o
 This property is plotted as
 ```python
 from tba import *
-x = System(model=cuprate_three_band)
+x = CuprateThreeBand()
 # currently orbital weight plot is very slow
 x.density_of_states(orb_wgt=True,fast=False)
 ```
@@ -120,7 +120,7 @@ A spike can be due to an energy band being flat with respect to momenta, where a
 This is easily visualized by plotting DoS along side energy band cuts along symmetry points:
 ```python
 from tba import *
-x = System()
+x = CuprateSingleBand()
 x.plot_bands_along_sym_cuts(withhos=True)
 ```
 ![](/images/tetra/cuprate_single_band_energy_band_cuts_with_hos.png)
