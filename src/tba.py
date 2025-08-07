@@ -700,6 +700,7 @@ class TetraSingleBandDDW(System):
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_DDW'
+        self.isAFRBZ = True
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
