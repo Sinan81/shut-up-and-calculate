@@ -29,11 +29,12 @@ import pdb
 import warnings
 warnings.filterwarnings('ignore')
 
-from models import *
+#from models import *
 from chi import *
 from ebands import *
 from util import *
 from spectra import *
+from crystals import *
 
 if os.environ.get('MPLBACKEND') is None:
     matplotlib.use("TkAgg")
@@ -48,17 +49,18 @@ kT = 0.01
 
 
 class System:
-    def __init__(self, model=cuprate_single_band, filling=None):
-        self.model = model
-        self.crystal = model.crystal
-        self.Eband = model.Eband
-        self.filling = self.set_filling(filling)
-        self.eFermi = self.get_Fermi_level1(self.filling)
-        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
-        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
-        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
-        self.__name__ = model.__name__
-        self.spectra = Spectra(self)
+    def __init__(self, filling=None):
+        pass
+#        self.model = model
+#        self.crystal = model.crystal
+#        self.Eband = model.Eband
+#        self.filling = self.set_filling(filling)
+#        self.eFermi = self.get_Fermi_level1(self.filling)
+#        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+#        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+#        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+#        self.__name__ = model.__name__
+#        self.spectra = Spectra(self)
 
     def get_default_eband(self):
         if self.crystal is Tetra:
@@ -66,11 +68,11 @@ class System:
 
     def set_filling(self, filling):
         if not filling:
-            if hasattr(self.model,'isAFRBZ'):
+            if hasattr(self,'isAFRBZ'):
                 # account for double counting in AF RBZ system
-                return self.model.rank/2 - 0.5
+                return self.rank/2 - 0.5
             else: # normal system
-                return self.model.rank - 0.5
+                return self.rank - 0.5
         else:
             return filling
 
@@ -78,6 +80,14 @@ class System:
         veband = np.vectorize(self.Eband)
         # xx,yy are meshgrids
         Eall = veband(xx,yy)
+        return Eall
+
+    def get_Eall(self, X, Y):
+        if self.rank == 1:
+            Eall = self.make_Eall1(X,Y)
+        else:
+            Eall = make_Eall(X,Y, self.Ematrix)
+            Eall = np.sort(Eall)
         return Eall
 
     def filling_vs_energy(self, isSaveFig=False):
@@ -89,7 +99,7 @@ class System:
         """
 
         cell = self.crystal
-        if hasattr(self.model,'isAFRBZ'):
+        if hasattr(self,'isAFRBZ'):
             X,Y = cell.get_kpoints(dk=0.1, isAFRBZ=True)
             # total number of k points is twice as much in the reduced RBZ zone.
             # Hence multiply by 2
@@ -98,11 +108,7 @@ class System:
             X,Y = cell.get_kpoints(dk=0.1)
             Nk =  X.size # X is a meshgrid
 
-        if self.model.rank == 1:
-            Eall = self.make_Eall1(X,Y)
-        else:
-            Eall = make_Eall(X,Y, self.model.Ematrix)
-            Eall = np.sort(Eall)
+        Eall = self.get_Eall(X,Y)
         Emin = Eall.min()
         Emax = Eall.max()
 
@@ -128,7 +134,7 @@ class System:
         """
 
         cell = self.crystal
-        if hasattr(self.model,'isAFRBZ'):
+        if hasattr(self,'isAFRBZ'):
             X,Y = cell.get_kpoints(dk=0.1, isAFRBZ=True)
             # total number of k points is twice as much in the reduced RBZ zone.
             # Hence multiply by 2
@@ -137,15 +143,9 @@ class System:
             X,Y = cell.get_kpoints(dk=0.1)
             Nvol =  X.size # X is a meshgrid
 
-        if self.model.rank == 1:
-            Eall = self.make_Eall1(X,Y)
-            Emin = Eall.min()
-            Emax = Eall.max()
-        else:
-            Eall = make_Eall(X,Y, self.model.Ematrix)
-            Eall = np.sort(Eall)
-            Emin = Eall.min()
-            Emax = Eall.max()
+        Eall = self.get_Eall(X,Y)
+        Emin = Eall.min()
+        Emax = Eall.max()
 
         # use bisection to find the Fermi level
         tol = 0.001
@@ -170,6 +170,18 @@ class System:
         return Emid
 
 
+    def make_cs(self,xx,yy):
+        veband = np.vectorize(self.Eband)
+        if self.rank == 1: # single band
+            Z = veband(xx, yy)
+            cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        else: # multi band
+            for iband in range(0,self.rank):
+                Z = veband(xx, yy, iband=iband)
+                cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        return cs
+
+
     def plot_Fermi_surface_contour(self, isSaveFig=False, isExtendedZone=False, dk=0.1, isShow=True):
 
         # plot all bands
@@ -186,14 +198,7 @@ class System:
         Y = np.arange(kmin, kmax, dk)
         xx, yy = np.meshgrid(X, Y)
 
-        veband = np.vectorize(self.Eband)
-        if self.model.rank == 1: # single band
-            Z = veband(xx, yy)
-            cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
-        else: # multi band
-            for iband in range(0,self.model.rank):
-                Z = veband(xx, yy, iband=iband)
-                cs = plt.contour(xx/pi, yy/pi, Z, [self.eFermi], linewidths=3)
+        cs = self.make_cs(xx,yy)
 
         ax.set_xlim(kmin/pi, kmax/pi)
         ax.set_ylim(kmin/pi, kmax/pi)
@@ -210,7 +215,7 @@ class System:
 
         # Draw first brilloin zone
         self.crystal.overlay_FBZ(plt)
-        if hasattr(self.model,'isAFRBZ'):
+        if hasattr(self,'isAFRBZ'):
             self.crystal.overlay_RBZ(plt)
 
 
@@ -236,7 +241,7 @@ class System:
 
 
         veband = np.vectorize(self.Eband)  # vectorize
-        if self.model.rank == 1: # single band
+        if self.rank == 1: # single band
             Z = veband(xx, yy)
             if style == 'topview':
                 # use pcolor for topview
@@ -263,7 +268,7 @@ class System:
                 pass
         else:
             fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-            for nb in range(0,self.model.rank):
+            for nb in range(0,self.rank):
                 Z   = veband(xx,yy,nb)
                 surf = ax.plot_surface(xx/pi, yy/pi, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
                                    linewidth=0, antialiased=False)
@@ -305,11 +310,11 @@ class System:
             lky = np.linspace(p1[1], p2[1], num=num)
             ax = axlist[i]
             ax.axhline(self.eFermi, color='k', ls='--')
-            if self.model.rank == 1: # single band
+            if self.rank == 1: # single band
                 Z = veband(lkx,lky)
                 ax.plot(Z)
             else: # multi band
-                for nb in range(0,self.model.rank):
+                for nb in range(0,self.rank):
                     Z   = veband(lkx,lky,nb)
                     ax.plot(Z)
 
@@ -344,11 +349,11 @@ class System:
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
-        ttxt=' '.join(self.model.__name__.split('_'))
-        if hasattr(self.model,'isAFRBZ'):
-            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank/2)
+        ttxt=' '.join(self.__name__.split('_'))
+        if hasattr(self,'isAFRBZ'):
+            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.rank/2)
         else:
-            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.model.rank)
+            tfill=' (filling='+"{:.2f}".format(self.filling)+"/{})".format(self.rank)
             #tfill=' (filling='+"{:.2f}".format(self.filling)+')'
         ttxt=ttxt + tfill
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
@@ -367,7 +372,7 @@ class System:
         """
         # Eall must be a flat, 1D, numpy array.
         # A given Eall matrix should be flattened as: Eall.flatten()
-        if self.model.rank == 1:
+        if self.rank == 1:
             return sum(sum(self.fermiDist(Eall-E0)))/float(Nk)
         else:
             vfermi = np.vectorize(self.fermiDist)
@@ -390,11 +395,390 @@ class System:
         return -1.0 / denom
 
 
+class CuprateSingleBand(System):
+    def __init__(self, filling=None):
+        self.crystal = Tetra()
+        self.rank = 1
+        self.__name__ = 'cuprate_single_band'
+        self.filling = self.set_filling(filling)
+        self.eFermi = self.get_Fermi_level1(self.filling)
+        # Note that these factors should be multiplied by t_ij**2
+        self.jfactors = (self.jfact1, self.jfact2, self.jfact3)
+        self.hfactors_left = self.get_hlist
+        self.hfactors_right = self.get_hlist_right
+        self.gbasis = [ self.g1, self.g2, self.g3, self.g4 , 1]
+        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.spectra = Spectra(self)
+
+    @staticmethod
+    @jit(nopython=True)
+    def Eband(kx, ky):
+        """
+        make cuprate energy matrix:
+        Tetra system with d-wave orbitals
+        """
+        eps = 0
+        t1 = 1
+        t2 = 0.0
+        t3 = 0.0
+
+        # 1-band cuprate
+        band = (
+            eps
+            - 2 * t1 * (np.cos(kx) + np.cos(ky))
+            - 4 * t2 * np.cos(kx) * np.cos(ky)
+            - 2 * t3 * (np.cos(2 * kx) + np.cos(2 * ky))
+        )
+        return band
+
+    # dont convert these to class methods
+    # since numba will probably not work
+    @staticmethod
+    def jfact1(k,q):
+        return 4*sin(k[0] + q[0]/2)**2
+
+
+    @staticmethod
+    def jfact2(k,q):
+        return 4*sin(k[1] + q[1]/2)**2
+
+
+    @staticmethod
+    def jfact3(k,q):
+        return 4*sin(k[0] + k[1] + +q[0]/2 + q[1]/2)**2
+
+    @staticmethod
+    # left hand side
+    def h1a(k,q):
+        # k[0] is kx etc
+        return exp(1j*(k[0]+q[0]))
+
+
+    @staticmethod
+    def h1b(k,q):
+        # k[0] is kx etc
+        return exp(-1j*k[0])
+
+
+    @staticmethod
+    def h2a(k,q):
+        # k[0] is kx etc
+        return exp(-1j*(k[0]+q[0]))
+
+
+    @staticmethod
+    def h2b(k,q):
+        # k[0] is kx etc
+        return exp(1j*k[0])
+
+
+    @staticmethod
+    def h3a(k,q):
+        # k[1] is ky etc
+        return exp(1j*(k[1]+q[1]))
+
+
+    @staticmethod
+    def h3b(k,q):
+        # k[1] is ky etc
+        return exp(-1j*k[1])
+
+
+    @staticmethod
+    def h4a(k,q):
+        # k[1] is ky etc
+        return exp(-1j*(k[1]+q[1]))
+
+
+    @staticmethod
+    def h4b(k,q):
+        # k[1] is ky etc
+        return exp(1j*k[1])
+
+
+    @staticmethod
+    # right hand side
+    def h1a_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h1a(kpq,mq)
+
+
+    @staticmethod
+    def h1b_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h1b(kpq,mq)
+
+
+    @staticmethod
+    def h2a_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h2a(kpq,mq)
+
+
+    @staticmethod
+    def h2b_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h2b(kpq,mq)
+
+
+    @staticmethod
+    def h3a_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h3a(kpq,mq)
+
+
+    @staticmethod
+    def h3b_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h3b(kpq,mq)
+
+
+    @staticmethod
+    def h4a_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h4a(kpq,mq)
+
+
+    @staticmethod
+    def h4b_right(k,q):
+        kpq = (k[0]+q[0], k[1]+q[1]) # k+q
+        mq = (-q[0],-q[1])      # -q
+        return h4b(kpq,mq)
+
+
+    # gbasis
+    @staticmethod
+    def g1(k):
+        return cos(k[0])
+
+    @staticmethod
+    def g2(k):
+        return sin(k[0])
+
+    @staticmethod
+    def g3(k):
+        return cos(k[1])
+
+    @staticmethod
+    def g4(k):
+        return sin(k[1])
+
+    @staticmethod
+    def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
+        return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
+
+    # current operator goes like J ~ c1*c2 - c2*c1, hence the pairs of h factors.
+    #hlist = [ (h1a, h1b), (h2a,h2b), (h3a,h3b), (h4a,h4b) ]
+    def get_hlist(self):
+        return [ (self.h1a, self.h1b), (self.h2a, self.h2b)]
+
+    def get_hlist_right(self):
+        return [ (self.h1a_right, self.h1b_right), (self.h2a_right, self.h2b_right) ]
+
+
+#    #cuprate_single_band.vmat_direct = vmat_direct
+#    self.U = 0         # initialize local interaction
+#    self.V = 0        # initialize nearest neighbour interaction
+#    self.Vnn = 0     # initialize next nearest neighbour
+#    self.vbasis = None   # to be used in gRPA
+
+
+class CuprateThreeBand(System):
+    def __init__(self, filling=None):
+        self.crystal = Tetra()
+        self.rank = 3
+        self.__name__ = 'cuprate_three_band'
+        self.filling = self.set_filling(filling)
+        self.eFermi = self.get_Fermi_level1(self.filling)
+        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.spectra = Spectra(self)
+
+    @staticmethod
+    def Ematrix(kx,ky):
+        """
+        make energy matrix
+        """
+        ed = 0
+        tpd = 1
+        ctg = 2.5
+        ex = ed-ctg
+        ey = ex
+        tpp = 0.5
+        t = 1
+        t1 = 1
+        t2 = 0.#25
+        t3 = 0.
+        ic = np.complex(0,1)
+        # 3-band case (Emery model for Cuprates)
+        m = np.matrix([ [ ed, 2.*tpd*np.sin(kx/2.), -2.*tpd*np.sin(ky/2.) ],
+                      [ 2.*tpd*np.sin(kx/2.), ex, -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.)],
+                      [ -2.*tpd*np.sin(ky/2.), -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.), ey  ]
+                    ])
+        return m;
+
+
+    def Eband(self, kx,ky,iband=1):
+        """
+        make energy bands
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
+        vl = np.sort(vl)
+        return vl[iband]
+
+
+class CuprateFourBandLCO(System):
+    def __init__(self, filling=None):
+        self.crystal = Tetra()
+        self.rank = 4
+        self.__name__ = 'cuprate_four_band_LCO'
+        self.filling = self.set_filling(filling)
+        self.eFermi = self.get_Fermi_level1(self.filling)
+        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.spectra = Spectra(self)
+
+    @staticmethod
+    def Ematrix(kx,ky):
+        """
+        make energy matrix for LaCuO4
+        """
+        # Reference:
+        # Unified description of cuprate superconductors using four-band d-p model
+        # https://arxiv.org/abs/2105.11664
+        t1 = 1.42
+        t2 = 0.61
+        t3 = 0.07
+        t4 = 0.65
+        t5 = 0.05
+        t6 = 0.07
+        eps_dx2y2 = -0.87
+        eps_dz = -0.11
+        eps_px = -3.13
+        eps_py = -3.13
+
+        ic = np.complex(0,1)
+        t11 = eps_dx2y2
+        t21 = 0
+        t22 = eps_dz -2*t5*(np.cos(kx) + np.cos(ky) )
+        t31 = 2*ic*t1*np.sin(kx/2)
+        t32 = -2*ic*t4*np.sin(kx/2)
+        t33 = eps_px + 2*t3*np.cos(kx) + 2*t6*( np.cos(kx+ky) + np.cos(kx - ky) )
+        t41 = -2*ic*t1*np.sin(ky/2)
+        t42 = -2*ic*t4*np.sin(ky/2)
+        t43 = 2*t2*( np.cos( (kx+ky)/2 ) - np.cos( (kx-ky)/2 ) )
+        t44 = eps_py + 2*t3*np.cos(ky) + 2*t6*(np.cos(kx + ky) + np.cos(kx-ky) )
+
+        m = np.matrix([ [ t11, np.conj(t21),  np.conj(t31), np.conj(t41) ],
+                      [ t21, t22,           np.conj(t32), np.conj(t42) ],
+                      [ t31, t32,           t33,          np.conj(t43) ],
+                      [ t41, t42,           t43,            t44        ]
+                    ])
+        return m;
+
+    def Eband(self, kx,ky,iband=1):
+        """
+        make energy bands
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
+        vl = np.sort(vl)
+        return vl[iband]
+
+class TetraSingleBandDDW(System):
+    def __init__(self, filling=None):
+        self.crystal = Tetra()
+        self.rank = 2
+        self.__name__ = 'tetra_single_band_DDW'
+        self.filling = self.set_filling(filling)
+        self.eFermi = self.get_Fermi_level1(self.filling)
+        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.spectra = Spectra(self)
+
+    @staticmethod
+    def Ematrix(kx,ky):
+        """
+        make energy matrix
+        """
+        # Reference:
+        # Spin and Current Correlation Functions in the d-density Wave State of the Cuprates
+        # Tewari et al 2001, https://arxiv.org/abs/cond-mat/0101027
+        t=0.3
+        tp=0.3*t
+        Ek = -2*t*(cos(kx) + cos(ky)) + 4*tp*cos(kx)*cos(ky)
+        kQx = kx + pi
+        kQy = ky + pi
+        EkQ = -2*t*(cos(kQx) + cos(kQy)) + 4*tp*cos(kQx)*cos(kQy)
+        W0=0.02
+        Wk = W0*0.5*(cos(kx) - cos(ky))
+        ic = np.complex(0,1)
+
+        # basis: c_k, c_{k+Q} where Q=(\pi,\pi)
+        m = np.matrix([
+                [ Ek,       1j*Wk ],
+                [ -1j*Wk,   EkQ    ]
+                ])
+        return m
+
+    def Eband(self, kx,ky,iband=1):
+        """
+        make energy bands
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
+        vl = np.sort(vl)
+        return vl[iband]
+
+
+class HexaSingleBand(System):
+    def __init__(self, filling=None):
+        self.crystal = Hexa()
+        self.rank = 1
+        self.__name__ = 'hexa_single_band'
+        self.filling = self.set_filling(filling)
+        self.eFermi = self.get_Fermi_level1(self.filling)
+        self.spectra = Spectra(self)
+
+    @staticmethod
+    @jit(nopython=True)
+    def Eband(kx, ky):
+        """
+        make energy matrix
+        """
+        eps = 0
+        t1 = 1
+        a = 1
+        theta_x = kx*a*0.5
+        theta_y = ky*a*sqrt(3.)*0.5
+        cx = np.cos(theta_x)
+        sx = np.sin(theta_x)
+        cy = np.cos(theta_y)
+        sy = np.sin(theta_y)
+
+        band = (
+            eps
+            - 2*t1*(cx**2 - sx**2)
+            - 4*t1*cx*cy
+        )
+        return band
+
+
 if __name__ == "__main__":
     # supress all warnings. Advanced users might want to undo this.
     warnings.filterwarnings('ignore')
     # default system is Tetra crystal with d-wave symmetry (cuprate)
-    cupr = System()
+    cupr = CuprateSingleBand()
     cupr.filling = 0.45
     cupr.plot_bands(isSaveFig=True)
     cupr.filling_vs_energy(isSaveFig=True)
@@ -402,5 +786,5 @@ if __name__ == "__main__":
     #cupr.plot_chi_vs_q(isSaveFig=True)
 
     # A hexa example
-    hexa = System(hexa_single_band)
+    hexa = HexaSingleBand()
     hexa.plot_Fermi_surface_contour()

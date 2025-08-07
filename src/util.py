@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from models import *
+#from models import *
 
 def get_list_of_models():
     print('List of all models:')

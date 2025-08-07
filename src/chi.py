@@ -28,7 +28,7 @@ from pathos.multiprocessing import ProcessingPool as PPool
 import warnings
 warnings.filterwarnings('ignore')
 
-from models import *
+#from models import *
 
 #matplotlib.use("TkAgg")
 
@@ -131,7 +131,7 @@ class Chi:
         """
         Z = ()
         # gbasis is diagonal. Hence a single for loop is sufficient
-        for gfunc in self.system.model.gbasis:
+        for gfunc in self.system.gbasis:
             self.extra_sus_factor = (gfunc, gfunc)
             with PPool(npool) as p:
                 chi = p.map(self.real_static, _xy)
@@ -147,7 +147,7 @@ class Chi:
                 p1,p2 = self.system.crystal.sym_cuts[i]
                 lkx = np.linspace(p1[0], p2[0], num=num)
                 lky = np.linspace(p1[1], p2[1], num=num)
-                if self.system.model.rank == 1: # single band
+                if self.system.rank == 1: # single band
                     # now zip X,Y so that we can use pool
                     _xy = list(zip(lkx, lky))
                     # multiprocess pools doesn't work with class methods
@@ -168,7 +168,7 @@ class Chi:
         # plot
         for i in range(0, ncuts):
             ax = axlist[i]
-            if self.system.model.rank == 1: # single band
+            if self.system.rank == 1: # single band
                 ax.plot(self.cuts[i], marker='o')
             else: # multi band
                 print('multi band chi not implemented yet')
@@ -203,7 +203,7 @@ class Chi:
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
-        ttxt=' '.join(self.system.model.__name__.split('_'))
+        ttxt=' '.join(self.system.__name__.split('_'))
         ttxt='Bare susceptibility of '+ttxt +' (filling='+"{:.2f}".format(self.system.filling)+')'
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:
@@ -241,7 +241,7 @@ class Chi:
         """
         import pickle
 
-        if self.system.model.rank > 1:
+        if self.system.rank > 1:
             print("Susceptibility calculation isn't implemented for multi orbital systems yet.")
             print("Exiting ...")
             return
@@ -518,8 +518,8 @@ class ChiCurrent(Chi):
         calculate bare current susceptibility
         """
         Z = ()
-        for hleft in self.system.model.hfactors_left:
-            for hright in self.system.model.hfactors_right:
+        for hleft in self.system.hfactors_left:
+            for hright in self.system.hfactors_right:
                 self.current_sus_factor = (hleft, hright)
                 #print('######')
                 for self.cfact_calc  in {'real', 'imag'}:

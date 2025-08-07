@@ -27,13 +27,13 @@ class Spectra:
         cell = self.system.crystal
         X,Y = cell.get_kpoints(Nk=Nk)
 
-        if self.system.model.rank == 1:
+        if self.system.rank == 1:
             Eall = self.system.make_Eall1(X,Y)
             Evecs = None
         else: # multi band
-            Eall = make_Eall(X,Y,self.system.model.Ematrix)
+            Eall = make_Eall(X,Y,self.system.Ematrix)
             Eall.flatten()
-            Evecs = get_Evecs(X,Y,self.system.model.Ematrix)
+            Evecs = get_Evecs(X,Y,self.system.Ematrix)
         return Eall, Evecs
 
 
@@ -71,12 +71,12 @@ class Spectra:
     def spectra_k_w(self, Ek_vals, Ek_vecs_matrix, delta_vals):
         # loop over each eigen val and vec
         dos_k = 0
-        ados_orb_k = np.zeros(self.system.model.rank)
-        for il in range(self.system.model.rank):
+        ados_orb_k = np.zeros(self.system.rank)
+        for il in range(self.system.rank):
             Ek = Ek_vals[il]
             Evec = Ek_vecs_matrix[:,il]
             # loop over each orbital
-            for iorb in range(self.system.model.rank):
+            for iorb in range(self.system.rank):
                 ados_orb_k[iorb] = ados_orb_k[iorb] + np.linalg.norm(Evec[iorb])*delta_vals[il]
         dos_k = np.sum(delta_vals)
         return dos_k, ados_orb_k
@@ -95,7 +95,7 @@ class Spectra:
     def spectra_w(self, omg):
         dos = 0
         lspectra = lambda ik: self.spectra_w_ik(omg, ik)
-        Nk = int(self.Eall.size/self.system.model.rank)
+        Nk = int(self.Eall.size/self.system.rank)
         Nk_list = list(range(Nk))
         #print("Nk_List: ",Nk_list[0:10])
         #pdb.set_trace()
@@ -147,7 +147,7 @@ class Spectra:
         dE = edges[1]-edges[0]
         nhist = sum(hist)
         ados = np.zeros(Nw)
-        ados_orb = np.zeros((self.system.model.rank,Nw))
+        ados_orb = np.zeros((self.system.rank,Nw))
         iw = 0
         aomg = np.linspace(plot_Emin,plot_Emax,Nw) # freq array
         for omg in aomg:
@@ -195,8 +195,8 @@ class Spectra:
             # also plot DoS contribution by each orbital
             if orb_wgt:
                 #marker = itertools.cycle(('.','+', 'o', '*'))
-                for iorb in range(self.system.model.rank):
-                    if self.system.model.__name__ == 'cuprate_three_band' and iorb == 2:
+                for iorb in range(self.system.rank):
+                    if self.system.__name__ == 'cuprate_three_band' and iorb == 2:
                         plt.plot(aomg,np.array(ados_orb)[:,iorb],marker='+',linestyle='')
                         plt.legend(['Total','Cu-d', 'O-px', 'O-py'])
                     else:
