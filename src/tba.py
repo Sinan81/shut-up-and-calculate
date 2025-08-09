@@ -695,6 +695,7 @@ class CuprateFourBandLCO(System):
         vl = np.sort(vl)
         return vl[iband]
 
+
 class TetraSingleBandDDW(System):
     def __init__(self, filling=None):
         self.crystal = Tetra()
@@ -730,6 +731,51 @@ class TetraSingleBandDDW(System):
         m = np.matrix([
                 [ Ek,       1j*Wk ],
                 [ -1j*Wk,   EkQ    ]
+                ])
+        return m
+
+    def Eband(self, kx,ky,iband=1):
+        """
+        make energy bands
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
+        vl = np.sort(vl)
+        return vl[iband]
+
+
+class TetraSingleBandSC(System):
+    def __init__(self, filling=None, D0=0.02):
+        self.D0 = D0
+        self.crystal = Tetra()
+        self.rank = 2
+        self.__name__ = 'tetra_single_band_SC'
+        self.filling = self.set_filling(filling)
+        # TODO calculate efermi using normal system or the proper way using spectral weight.
+        self.eFermi = 0 #self.get_Fermi_level1(self.filling)
+        #self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
+        #self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
+        #self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.spectra = Spectra(self)
+        self.ef_plot_offset=0.
+
+    #@staticmethod
+    def Ematrix(self,kx,ky):
+        """
+        make energy matrix
+        """
+        # Reference:
+        # Spin and Current Correlation Functions in the d-density Wave State of the Cuprates
+        # Tewari et al 2001, https://arxiv.org/abs/cond-mat/0101027
+        t=0.3
+        tp=0.3*t
+        Ek = -2*t*(cos(kx) + cos(ky)) + 4*tp*cos(kx)*cos(ky)
+        D0=self.D0
+        Dk= D0*0.5*(cos(kx) - cos(ky))
+
+        # basis: c_k_spin_up^dagger, c_{-k}_spin_down
+        m = np.matrix([
+                [ Ek,       Dk ],
+                [ Dk,   -Ek    ]
                 ])
         return m
 
