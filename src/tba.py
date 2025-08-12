@@ -223,12 +223,10 @@ class System:
             plt.savefig(self.__name__ + "_fermi_surface.png")
         if isShow:
             plt.show()
-
-        for item in cs.collections:
-            for i in item.get_paths():
-                v = i.vertices
-                cx = v[:,0]
-                cy = v[:,1]
+        for path in cs.get_paths():
+            v = path.vertices
+            cx = v[:,0]
+            cy = v[:,1]
         return cx,cy
 
 
