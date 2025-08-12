@@ -30,7 +30,7 @@ from pathos.multiprocessing import ProcessingPool as PPool
 ncpus = len(os.sched_getaffinity(0))
 npool = ncpus if ncpus else 2
 
-ic = np.complex(0, 1.0)
+ic = complex(0, 1.0)
 
 kT = 0.01
 

@@ -43,7 +43,7 @@ if os.environ.get('MPLBACKEND') is None:
 ncpus = len(os.sched_getaffinity(0))
 npool = ncpus if ncpus else 2
 
-ic = np.complex(0, 1.0)
+ic = complex(0, 1.0)
 
 kT = 0.01
 
@@ -617,7 +617,7 @@ class CuprateThreeBand(System):
         t1 = 1
         t2 = 0.#25
         t3 = 0.
-        ic = np.complex(0,1)
+        ic = complex(0,1)
         # 3-band case (Emery model for Cuprates)
         m = np.matrix([ [ ed, 2.*tpd*np.sin(kx/2.), -2.*tpd*np.sin(ky/2.) ],
                       [ 2.*tpd*np.sin(kx/2.), ex, -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.)],

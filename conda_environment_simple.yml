@@ -3,8 +3,8 @@ channels:
   - defaults
 dependencies:
   - matplotlib=3.10.0
-  - numba=0.56.4
-  - numpy=1.23.5
+  - numba=0.58.1
+  - numpy=1.25.2
   - python=3.10
   - scipy=1.10.0
   - tk
