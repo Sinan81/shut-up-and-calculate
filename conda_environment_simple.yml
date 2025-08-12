@@ -6,7 +6,7 @@ dependencies:
   - numba=0.58.1
   - numpy=1.25.2
   - python=3.10
-  - scipy=1.10.0
+  - scipy=1.15.3
   - tk
   - pip
   - pip:
