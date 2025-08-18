@@ -11,7 +11,7 @@ import warnings
 
 # extras
 # numba results in 30x speed up!!!
-from numba import jit
+from numba import jit, njit, float64
 import numba
 from numpy import pi, sqrt
 import numpy as np
@@ -126,7 +126,7 @@ class System:
         plt.show()
         #return elist,vfilling
 
-    @jit()
+    #@jit()
     def get_Fermi_level1(self, target_filling: float) -> float:
         """
         This function calculates the fermi level corresponding to
@@ -362,8 +362,9 @@ class System:
 
 
 
-    @jit()
-    def filling1(self,E0,Eall,Nk):
+    #@jit()
+    #@njit(float, float64[:,:], int)
+    def filling1(self, E0, Eall, Nk):
         """
         calculates filling for a given Fermi level E0
         uses global variables Eall, Nk

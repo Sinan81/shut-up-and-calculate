@@ -82,7 +82,7 @@ class Chi:
         return r
 
 
-    @jit()
+    #@jit()
     def real_integ_static(self, kx, ky, qx, qy):
         """
         Real part of susceptibility integrand
