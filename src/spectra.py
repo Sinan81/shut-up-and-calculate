@@ -128,6 +128,7 @@ class Spectra:
 
 
     def delta(self, Ek, omg):
+        """ Lorentzian broadenning"""
         return self.gamma/( (Ek-omg)**2 + self.gamma**2 )
 
 
