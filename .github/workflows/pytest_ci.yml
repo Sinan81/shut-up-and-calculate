@@ -1,4 +1,4 @@
-name: Pytest CI Python@3.11
+name: Pytest CI Python@3.13
 
 on: [push]
 
