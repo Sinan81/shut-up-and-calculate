@@ -114,7 +114,7 @@ x.spectra.density_of_states(orb_wgt=True,fast=False)
 ![](/images/tetra/cuprate_three_band_density_of_states_orbital_resolved.png)
 
 Sometimes it's also useful to look at k-resolved spectra at Fermi surface for each orbital.
-```
+```python
 from tba import *
 x = CuprateThreeBand()
 x.spectra.plot_spectra_at_fermi_surf()
