@@ -84,7 +84,7 @@ DoS is simply a histogram of energy levels: number of energy levels in a given $
 ```python
 from tba import *
 x = CuprateSingleBand()
-x.histogram_of_states()
+x.spectra.histogram_of_states()
 ```
 ![](/images/tetra/cuprate_single_band_histogram_of_states.png)
 
@@ -97,7 +97,7 @@ Hence DoS can be plotted as:
 ```python
 from tba import *
 x = CuprateSingleBand()
-x.density_of_states()
+x.spectra.density_of_states()
 ```
 ![](/images/tetra/cuprate_single_band_density_of_states.png)
 
@@ -109,7 +109,7 @@ This property is plotted as
 from tba import *
 x = CuprateThreeBand()
 # currently orbital weight plot is very slow
-x.density_of_states(orb_wgt=True,fast=False)
+x.spectra.density_of_states(orb_wgt=True,fast=False)
 ```
 ![](/images/tetra/cuprate_three_band_density_of_states_orbital_resolved.png)
 
