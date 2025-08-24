@@ -602,6 +602,7 @@ class CuprateThreeBand(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.orbital_labels = ['Cu', 'Ox', 'Oy']
 
     @staticmethod
     def Ematrix(kx,ky):

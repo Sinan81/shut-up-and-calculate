@@ -105,6 +105,45 @@ class Spectra:
         ados_orb = sum(ados_orb_k_list)/Nk/np.pi
         return (ados, ados_orb)
 
+    def spectra_w_vs_k(self, omg):
+        dos = 0
+        lspectra = lambda ik: self.spectra_w_ik(omg, ik)
+        Nk = int(self.Eall.size/self.system.rank)
+        Nk_list = list(range(Nk))
+        #print("Nk_List: ",Nk_list[0:10])
+        #pdb.set_trace()
+        spectra_vals = list(map(lspectra, Nk_list))
+        dos_k_list, ados_orb_k_list = zip(*spectra_vals)
+        #ados = sum(dos_k_list)/Nk/np.pi
+        #ados_orb = sum(ados_orb_k_list)/Nk/np.pi
+        return (np.array(dos_k_list), np.array(ados_orb_k_list) )
+
+    def plot_spectra_at_fermi_surf(self, orb_resolv=False, isSaveFig=False):
+
+        self.Eall, self.Evecs = self.get_Eigs(Nk=200)
+        self.gamma = 0.05
+        # total and oribital resolved spectra at fermi surf
+        tdos, odos = self.spectra_w_vs_k(omg=self.system.eFermi)
+        Nkx = int(np.sqrt(len(tdos)))
+        #mtdos = tdos.reshape(Nkx,Nkx)
+        #plt.imshow(mtdos)
+        #plt.show()
+        norbitals = odos.shape[1]
+        fsize=6
+        fig, axes = plt.subplots(1, norbitals, figsize=(fsize, int(fsize/norbitals)))
+        for oind in range(norbitals):
+            data = odos.T[oind].reshape(Nkx,Nkx)
+            im = axes[oind].imshow(data, cmap='viridis', aspect='equal')
+            olabel = self.system.orbital_labels[oind]
+            axes[oind].set_title(olabel, fontsize=14, fontweight='bold')
+            axes[oind].set_xticks([])
+            axes[oind].set_yticks([])
+        plt.tight_layout()
+        if isSaveFig:
+            plt.savefig('spectra_at_fermi_surface.png')
+        plt.show()
+
+
 
     def get_spectra_vs_omg(self, plot_Emin, plot_Emax):
         print("plot_Emin is:", plot_Emin)
@@ -125,7 +164,6 @@ class Spectra:
         toc = time.perf_counter()
         print(f"run time: {toc - tic:.1f} seconds")
         return aomg, ados, ados_orb
-
 
     def delta(self, Ek, omg):
         """ Lorentzian broadenning"""

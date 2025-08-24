@@ -113,6 +113,10 @@ x.density_of_states(orb_wgt=True,fast=False)
 ```
 ![](/images/tetra/cuprate_three_band_density_of_states_orbital_resolved.png)
 
+Sometimes it's also useful to look at k-resolved spectra at Fermi surface for each orbital.
+
+![](/images/tetra/cuprate_three_band_spectra_at_fermi_surf_orbital_resolved.png)
+
 # Van-Hove Singularities
 
 A Van-Hove singularity (VHS) is basically  where DoS exhibits a spike or a kink.
