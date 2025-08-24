@@ -725,7 +725,7 @@ class TetraSingleBandDDW(System):
         EkQ = -2*t*(cos(kQx) + cos(kQy)) + 4*tp*cos(kQx)*cos(kQy)
         W0=0.02
         Wk = W0*0.5*(cos(kx) - cos(ky))
-        ic = np.complex(0,1)
+        ic = complex(0,1)
 
         # basis: c_k, c_{k+Q} where Q=(\pi,\pi)
         m = np.matrix([

@@ -93,30 +93,59 @@ class Spectra:
 
 
     def spectra_w(self, omg):
+        """ k-integrated spectra """
         dos = 0
         lspectra = lambda ik: self.spectra_w_ik(omg, ik)
         Nk = int(self.Eall.size/self.system.rank)
         Nk_list = list(range(Nk))
-        #print("Nk_List: ",Nk_list[0:10])
-        #pdb.set_trace()
         spectra_vals = list(map(lspectra, Nk_list))
         dos_k_list, ados_orb_k_list = zip(*spectra_vals)
         ados = sum(dos_k_list)/Nk/np.pi
         ados_orb = sum(ados_orb_k_list)/Nk/np.pi
         return (ados, ados_orb)
 
+
     def spectra_w_vs_k(self, omg):
+        """ k-resolved spectra """
         dos = 0
         lspectra = lambda ik: self.spectra_w_ik(omg, ik)
         Nk = int(self.Eall.size/self.system.rank)
         Nk_list = list(range(Nk))
-        #print("Nk_List: ",Nk_list[0:10])
-        #pdb.set_trace()
         spectra_vals = list(map(lspectra, Nk_list))
         dos_k_list, ados_orb_k_list = zip(*spectra_vals)
-        #ados = sum(dos_k_list)/Nk/np.pi
-        #ados_orb = sum(ados_orb_k_list)/Nk/np.pi
         return (np.array(dos_k_list), np.array(ados_orb_k_list) )
+
+
+    def plot_spectra_along_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi):
+        # cut along ky with kx=pi
+        kx = pi
+        lky = np.linspace(kmin, kmax, num=200)
+        lkx = np.ones(len(lky))*pi
+
+        if self.system.rank == 1:
+            Eall = self.system.make_Eall1(lkx,lky)
+            Evecs = None
+        else: # multi band
+            Eall = make_Eall(lkx,lky,self.system.Ematrix)
+            Eall.flatten()
+            Evecs = get_Evecs(lkx,lky,self.system.Ematrix)
+        self.Eall = Eall-self.system.eFermi
+        self.Evecs = Evecs
+        lspectra = lambda omg: self.spectra_w_vs_k(omg)
+        lomg = np.linspace(Emin,Emax, num=200)
+        lomg = lomg
+        spectra_vals = list(map(lspectra, lomg))
+        # extract tdos for now
+        spectra_vals_tdos = []
+        for row in spectra_vals:
+            spectra_vals_tdos.append(row[0])
+        # return a 2d numpy array from list of 1d np arrays.
+        data = np.vstack(spectra_vals_tdos)
+        im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0]-self.system.eFermi,lomg[-1]-self.system.eFermi], aspect='auto')
+        plt.xlabel("ky/pi with kx=pi")
+        plt.ylabel("$\omega$")
+        plt.show()
+
 
     def plot_spectra_at_fermi_surf(self, orb_resolv=False, isSaveFig=False):
 
@@ -144,7 +173,6 @@ class Spectra:
         plt.show()
 
 
-
     def get_spectra_vs_omg(self, plot_Emin, plot_Emax):
         print("plot_Emin is:", plot_Emin)
         print("plot_Emax is:", plot_Emax)
@@ -164,6 +192,7 @@ class Spectra:
         toc = time.perf_counter()
         print(f"run time: {toc - tic:.1f} seconds")
         return aomg, ados, ados_orb
+
 
     def delta(self, Ek, omg):
         """ Lorentzian broadenning"""
