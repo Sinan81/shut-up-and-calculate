@@ -85,7 +85,7 @@ class Spectra:
     def spectra_w_ik(self, omg, ik):
         #for ik in range(Nk):
         Evals_k = self.Eall[:,ik]
-        Evecmat_k = self.Evecs[:,ik].reshape(3,3)
+        Evecmat_k = self.Evecs[:,ik].reshape(self.system.rank,self.system.rank)
         delta = lambda Ek: self.delta(Ek, omg)
         delta_vals = list(map(delta, Evals_k))
         dos_k, ados_orb_k = self.spectra_k_w(Evals_k, Evecmat_k, delta_vals)
