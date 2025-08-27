@@ -31,6 +31,8 @@ ddw.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200)
 
 ![](/images/tetra/tetra_single_band_ddw_energy_band_cuts.png)
 
+It would be instructive, to replot this figure for symettry points of AF reduced Brilloin Zone.
+
 Accordingly, the Fermi surface is modified by DDW in a way similar to the pseudogap phase, where the above mentioned gap extends to certain regions along AF RBZ resulting in electron and hole pockets.
 ![](/images/tetra/tetra_single_band_ddw_fermi_surface.png)
 
