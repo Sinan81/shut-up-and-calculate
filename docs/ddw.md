@@ -22,7 +22,7 @@ $$
 
 $t$ is nearest neighbout tunneling, $t\prime$ is the next nearest neighbour tunneling, and $W(\mathbf{k}) = W_0 \left ( \cos k_x - \cos k_y \right)$.
 
-DDW opens a gap around $X=(\pi,0)$ point as shown below:
+DDW opens a gap around $X=(\pi,0)$ or $Y=(0,\pi)$ points as shown below (as well as along AF RBZ at the Fermi surface)
 ```python
 from tba import *
 ddw = System(model=tetra_single_band_ddw)
