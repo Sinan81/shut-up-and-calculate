@@ -22,7 +22,7 @@ $$
 
 $t$ is nearest neighbout tunneling, $t\prime$ is the next nearest neighbour tunneling, and $W(\mathbf{k}) = W_0 \left ( \cos k_x - \cos k_y \right)$.
 
-DDW opens a gap around $X=(\pi,0)$ or $Y=(0,\pi)$ points as shown below (as well as along AF RBZ at the Fermi surface)
+DDW opens a gap around $X=(\pi,0)$ or $Y=(0,\pi)$ points as shown below.
 ```python
 from tba import *
 ddw = System(model=tetra_single_band_ddw)
@@ -31,7 +31,7 @@ ddw.plot_bands_along_sym_cuts(plot_Emin=-1,plot_Emax=2,num=200)
 
 ![](/images/tetra/tetra_single_band_ddw_energy_band_cuts.png)
 
-Accordingly, the Fermi surface is modified by DDW in a way similar to the pseudogap phase.
+Accordingly, the Fermi surface is modified by DDW in a way similar to the pseudogap phase, where the above mentioned gap extends to certain regions along AF RBZ resulting in electron and hole pockets.
 ![](/images/tetra/tetra_single_band_ddw_fermi_surface.png)
 
 # References
