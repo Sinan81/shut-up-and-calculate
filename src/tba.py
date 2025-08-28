@@ -149,7 +149,7 @@ class System:
 
         # use bisection to find the Fermi level
         Emid = (Emin+Emax)/2.
-        tol = 0.001
+        tol = 0.01 #TODO decrase to 0.001
         dn = 5 #initialize
         N_iter = 0
         while dn>tol and N_iter < 10:
