@@ -1,0 +1,18 @@
+# This is a Spack Environment file.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+spack:
+  # add package specs to the `specs` list
+  specs:
+  - python@3.12
+  - py-matplotlib@3.10.0
+  - py-numba
+  - py-numpy@2.2.5
+  - py-scipy@1.16.0
+  - py-pytest
+  - py-ipython
+  - py-pathos
+  view: true
+  concretizer:
+    unify: true
