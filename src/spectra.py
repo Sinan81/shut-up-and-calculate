@@ -120,7 +120,7 @@ class Spectra:
         # cut along ky with kx=pi
         kx = pi
         lky = np.linspace(kmin, kmax, num=200)
-        lkx = np.ones(len(lky))*pi
+        lkx = np.ones(len(lky))*kx
 
         if self.system.rank == 1:
             Eall = self.system.make_Eall1(lkx,lky)
@@ -129,11 +129,10 @@ class Spectra:
             Eall = make_Eall(lkx,lky,self.system.Ematrix)
             Eall.flatten()
             Evecs = get_Evecs(lkx,lky,self.system.Ematrix)
-        self.Eall = Eall-self.system.eFermi
+        self.Eall = Eall#-self.system.eFermi
         self.Evecs = Evecs
         lspectra = lambda omg: self.spectra_w_vs_k(omg)
         lomg = np.linspace(Emin,Emax, num=200)
-        lomg = lomg
         spectra_vals = list(map(lspectra, lomg))
         # extract tdos for now
         spectra_vals_tdos = []
@@ -141,7 +140,7 @@ class Spectra:
             spectra_vals_tdos.append(row[0])
         # return a 2d numpy array from list of 1d np arrays.
         data = np.vstack(spectra_vals_tdos)
-        im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0]-self.system.eFermi,lomg[-1]-self.system.eFermi], aspect='auto')
+        im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto')
         plt.xlabel("ky/pi with kx=pi")
         plt.ylabel("$\omega$")
         plt.show()

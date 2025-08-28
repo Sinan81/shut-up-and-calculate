@@ -148,9 +148,8 @@ class System:
         Emax = Eall.max()
 
         # use bisection to find the Fermi level
-        tol = 0.001
         Emid = (Emin+Emax)/2.
-        tol = 0.01
+        tol = 0.001
         dn = 5 #initialize
         N_iter = 0
         while dn>tol and N_iter < 10:
@@ -168,7 +167,6 @@ class System:
             #print "E_fermi = ",efermi
             N_iter = N_iter + 1
         return Emid
-
 
     def make_cs(self,xx,yy):
         veband = np.vectorize(self.Eband)
@@ -744,14 +742,15 @@ class TetraSingleBandDDW(System):
 
 
 class TetraSingleBandSC(System):
-    def __init__(self, filling=None, D0=0.02):
+    def __init__(self, filling=0.5, D0=0.035, mu=0):
         self.D0 = D0
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_SC'
         self.filling = self.set_filling(filling)
         # TODO calculate efermi using normal system or the proper way using spectral weight.
-        self.eFermi = 0 #self.get_Fermi_level1(self.filling)
+        self.mu = mu
+        self.eFermi = self.get_Fermi_level1(self.filling)
         #self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
         #self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         #self.chis = Chi(self) # static susceptibility chi(omega=0,q)
@@ -774,8 +773,8 @@ class TetraSingleBandSC(System):
 
         # basis: c_k_spin_up^dagger, c_{-k}_spin_down
         m = np.matrix([
-                [ Ek,       Dk ],
-                [ Dk,   -Ek    ]
+                [ Ek-self.mu,       Dk ],
+                [ Dk,   self.mu -Ek]
                 ])
         return m
 
@@ -786,6 +785,16 @@ class TetraSingleBandSC(System):
         vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
         vl = np.sort(vl)
         return vl[iband]
+
+    #@njit(float, float64[:,:], int)
+    def filling1(self, E0, Eall, Nk):
+        """
+        calculates filling for a given Fermi level E0
+        uses global variables Eall, Nk
+        """
+        # select the particle sector of hamiltonian for calculating filling
+        Eparticle = Eall[0]
+        return sum(self.fermiDist(Eparticle-E0))/float(Nk)
 
 
 class HexaSingleBand(System):
