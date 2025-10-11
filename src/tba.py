@@ -771,13 +771,12 @@ class TetraSingleBandDDW(System):
 
 
 class TetraSingleBandSC(System):
-    def __init__(self, filling=0.5, D0=0.035, mu=0):
+    def __init__(self, filling=0.5, D0=0.035, mu=-0.2925):
         self.D0 = D0
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_SC'
         self.filling = self.set_filling(filling)
-        # TODO calculate efermi using normal system or the proper way using spectral weight.
         self.mu = mu
         self.eFermi = self.get_Fermi_level1(self.filling)
         #self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
