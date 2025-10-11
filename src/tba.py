@@ -169,9 +169,6 @@ class System:
             else:
                 Emin = Emid
                 Emid = (Emin+Emax)/2.
-
-            #efermi = Emid
-            #print "E_fermi = ",efermi
             N_iter = N_iter + 1
         return Emid
 
@@ -818,6 +815,9 @@ class TetraSingleBandSC(System):
         density_by_orb = self.filling_multiband(E0=E0,Eall=Eall,Nvol=Nvol, Evecs=Evecs)
         # only return particle density (i.e. first orbital) as opposed to contrubitions from hole density
         return density_by_orb[0]
+
+    def filling_vs_energy(self, isSaveFig=False):
+        print("SC model needs a different version of this method. Exiting...")
 
 class HexaSingleBand(System):
     def __init__(self, filling=None):
