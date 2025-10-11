@@ -57,7 +57,7 @@ def make_Eall(xx,yy,func_em):
         i = i +1
     return Eall
 
-def get_Evecs(xx,yy,func_em):
+def get_Evecs(xx,yy,func_em, flatten=True):
     # xx, yy are meshgrids for kx, ky
     # These naive for loops should be replaced with a more performant logic
     # While numpy vectorize worked nicely for getting eigenvalues (one band at a time!)
@@ -69,15 +69,25 @@ def get_Evecs(xx,yy,func_em):
     i = 0
     points = list(zip(xx.ravel(), yy.ravel()))
     vl,vc = np.linalg.eig(func_em(0.,0.)) # get size
-    Eall  = np.zeros((vl.size, len(points)));
-    Evecs = np.zeros((vl.size**2, len(points)));
+    #Eall_flat = np.zeros((vl.size, len(points)));
+    Evecs_flat = np.zeros((vl.size**2, len(points)));
+
+    Eall = np.zeros((len(points),vl.size));
+    Evecs = np.zeros((len(points),*vc.shape));
     for point in points:
         kx,ky = point
         vl,vc = np.linalg.eig(func_em(kx,ky))
-        Eall[:,i] = vl
-        Evecs[:,i] = vc.flatten()
+        #Eall_flat[:,i] = vl
+        Evecs_flat[:,i] = vc.flatten()
+        Eall[i,:] = vl
+        Evecs[i,:] = vc
         i = i +1
-    return Evecs
+    if flatten:
+        return Evecs_flat
+    else:
+        return Evecs, Eall
+
+
 
 
 #def eband(kx,ky,iband,em):
