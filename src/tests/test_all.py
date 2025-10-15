@@ -44,7 +44,6 @@ def test_susceptibility_charge_real_static():
     chi = x.chic.real_static(q)
     assert np.allclose(chi, chi_ref)
 
-@pytest.mark.xfail(reason='fails after rethink of models as classes')
 def test_susceptibility_current_real_static():
     # very heavy computation so just pick a single point to calculate
     x = CuprateSingleBand()
@@ -52,6 +51,23 @@ def test_susceptibility_current_real_static():
     out = x.chij.calc_vs_q(Nq=1)
     chi = np.real(out[0][0][0][0])
     assert np.allclose(chi, chi_ref)
+
+
+def test_current_sus_factors():
+    # very heavy computation so just pick a single point to calculate
+    x = CuprateSingleBand()
+    k = (0.1, 0.2)
+    q = (0.3, 0.4)
+    kpq =(k[0]+q[0],k[1]+q[1])
+    mq = (-q[0], -q[1])
+    assert x.h1a_right(k,q) == x.h1a(kpq,mq)
+    assert x.h1b_right(k,q) == x.h1b(kpq,mq)
+    assert x.h2a_right(k,q) == x.h2a(kpq,mq)
+    assert x.h2b_right(k,q) == x.h2b(kpq,mq)
+    assert x.h3a_right(k,q) == x.h3a(kpq,mq)
+    assert x.h3b_right(k,q) == x.h3b(kpq,mq)
+    assert x.h4a_right(k,q) == x.h4a(kpq,mq)
+    assert x.h4b_right(k,q) == x.h4b(kpq,mq)
 
 
 # multi band

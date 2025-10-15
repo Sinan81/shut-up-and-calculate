@@ -13,7 +13,7 @@ import warnings
 # numba results in 30x speed up!!!
 from numba import jit, njit, float64
 import numba
-from numpy import pi, sqrt
+from numpy import pi, sqrt, exp
 import numpy as np
 import scipy.integrate as integrate
 from scipy.integrate import dblquad
@@ -401,8 +401,8 @@ class CuprateSingleBand(System):
         self.eFermi = self.get_Fermi_level1(self.filling)
         # Note that these factors should be multiplied by t_ij**2
         self.jfactors = (self.jfact1, self.jfact2, self.jfact3)
-        self.hfactors_left = self.get_hlist
-        self.hfactors_right = self.get_hlist_right
+        self.hfactors_left = self.get_hlist()
+        self.hfactors_right = self.get_hlist_right()
         self.gbasis = [ self.g1, self.g2, self.g3, self.g4 , 1]
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
@@ -430,17 +430,14 @@ class CuprateSingleBand(System):
         )
         return band
 
-    # dont convert these to class methods
-    # since numba will probably not work
+    # Functions to be used in current susceptibility calculations
     @staticmethod
     def jfact1(k,q):
         return 4*sin(k[0] + q[0]/2)**2
 
-
     @staticmethod
     def jfact2(k,q):
         return 4*sin(k[1] + q[1]/2)**2
-
 
     @staticmethod
     def jfact3(k,q):
@@ -452,105 +449,89 @@ class CuprateSingleBand(System):
         # k[0] is kx etc
         return exp(1j*(k[0]+q[0]))
 
-
     @staticmethod
     def h1b(k,q):
         # k[0] is kx etc
         return exp(-1j*k[0])
-
 
     @staticmethod
     def h2a(k,q):
         # k[0] is kx etc
         return exp(-1j*(k[0]+q[0]))
 
-
     @staticmethod
     def h2b(k,q):
         # k[0] is kx etc
         return exp(1j*k[0])
-
 
     @staticmethod
     def h3a(k,q):
         # k[1] is ky etc
         return exp(1j*(k[1]+q[1]))
 
-
     @staticmethod
     def h3b(k,q):
         # k[1] is ky etc
         return exp(-1j*k[1])
-
 
     @staticmethod
     def h4a(k,q):
         # k[1] is ky etc
         return exp(-1j*(k[1]+q[1]))
 
-
     @staticmethod
     def h4b(k,q):
         # k[1] is ky etc
         return exp(1j*k[1])
-
 
     @staticmethod
     # right hand side
     def h1a_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h1a(kpq,mq)
-
+        return exp(1j*(kpq[0]+mq[0])) # h1a(kpq,mq)
 
     @staticmethod
     def h1b_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h1b(kpq,mq)
-
+        return exp(-1j*kpq[0]) # h1b(kpq,mq)
 
     @staticmethod
     def h2a_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h2a(kpq,mq)
-
+        return exp(-1j*(kpq[0]+mq[0])) # h2a(kpq,mq)
 
     @staticmethod
     def h2b_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h2b(kpq,mq)
-
+        return exp(1j*kpq[0]) # h2b(kpq,mq)
 
     @staticmethod
     def h3a_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h3a(kpq,mq)
-
+        return exp(1j*(kpq[1]+mq[1])) # h3a(kpq,mq)
 
     @staticmethod
     def h3b_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h3b(kpq,mq)
-
+        return exp(-1j*kpq[1]) # h3b(kpq,mq)
 
     @staticmethod
     def h4a_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h4a(kpq,mq)
-
+        return exp(-1j*(kpq[1]+mq[1])) # h4a(kpq,mq)
 
     @staticmethod
     def h4b_right(k,q):
         kpq = (k[0]+q[0], k[1]+q[1]) # k+q
         mq = (-q[0],-q[1])      # -q
-        return h4b(kpq,mq)
-
+        return exp(1j*kpq[1]) # h4b(kpq,mq)
 
     # gbasis
     @staticmethod

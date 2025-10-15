@@ -13,7 +13,7 @@ import warnings
 # numba results in 30x speed up!!!
 from numba import jit
 import numba
-from numpy import pi, sqrt
+from numpy import pi, sqrt, exp
 import numpy as np
 import scipy.integrate as integrate
 from scipy.integrate import dblquad
@@ -454,7 +454,7 @@ class ChiCurrent(Chi):
         return Z
 
 
-    def real_static(self, q):
+    def real_static(self, q) -> float:
         """
         Real part of susceptibility integrand
         """
@@ -482,7 +482,7 @@ class ChiCurrent(Chi):
         return r
 
 
-    @jit()
+    #@jit()
     def real_integ_static(self, kx, ky, qx, qy):
         """
         Real part of susceptibility integrand
