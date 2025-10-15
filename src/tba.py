@@ -126,6 +126,9 @@ class System:
         plt.show()
         #return elist,vfilling
 
+    def get_density(self, E0,Eall,Nvol,Evecs=None):
+        return self.filling1(E0,Eall,Nvol)
+
     #@jit()
     def get_Fermi_level1(self, target_filling: float) -> float:
         """
@@ -143,7 +146,12 @@ class System:
             X,Y = cell.get_kpoints(dk=0.1)
             Nvol =  X.size # X is a meshgrid
 
-        Eall = self.get_Eall(X,Y)
+        if self.rank > 1:
+            Evecs, Eall = get_Evecs(X,Y,self.Ematrix,flatten=False)
+        else:
+            Evecs = None
+            Eall = self.get_Eall(X,Y)
+
         Emin = Eall.min()
         Emax = Eall.max()
 
@@ -153,8 +161,7 @@ class System:
         dn = 5 #initialize
         N_iter = 0
         while dn>tol and N_iter < 10:
-            density = self.filling1(Emid,Eall,Nvol)
-            #print(density)
+            density = self.get_density(Emid,Eall,Nvol,Evecs)
             dn = abs(target_filling - density)
             if density > target_filling: #Emid is big
                 Emax = Emid
@@ -162,9 +169,6 @@ class System:
             else:
                 Emin = Emid
                 Emid = (Emin+Emax)/2.
-
-            #efermi = Emid
-            #print "E_fermi = ",efermi
             N_iter = N_iter + 1
         return Emid
 
@@ -374,6 +378,28 @@ class System:
         else:
             vfermi = np.vectorize(self.fermiDist)
             return sum(sum(vfermi(Eall-E0)))/float(Nk)
+
+
+    def filling_multiband(self, E0, Eall, Nvol, Evecs):
+        """
+        calculates filling for a given Fermi level E0
+        uses global variables Eall, Nk
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(0.,0.)) # get size
+        # orbital resolved weight
+        sw = np.zeros((Nvol,*vc.shape))
+        for ii in range(Nvol):
+            vl = Eall[ii, :]
+            vc = Evecs[ii,:]
+            # create a 2d array with vl provided columnwise and duplicated
+            vl2d = np.array([vl,vl])
+            vc_conj = vc.conj()
+            n_k = vc*vc_conj*self.fermiDist(vl2d - E0)
+            sw[ii] = n_k
+        orbital_resolved_filling = []
+        for iorb in range(self.rank):
+            orbital_resolved_filling.append(sw[:,iorb,:].sum()/Nvol )
+        return  orbital_resolved_filling
 
 
     @staticmethod
@@ -723,13 +749,12 @@ class TetraSingleBandDDW(System):
 
 
 class TetraSingleBandSC(System):
-    def __init__(self, filling=0.5, D0=0.035, mu=0):
+    def __init__(self, filling=0.5, D0=0.035, mu=-0.2925):
         self.D0 = D0
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_SC'
         self.filling = self.set_filling(filling)
-        # TODO calculate efermi using normal system or the proper way using spectral weight.
         self.mu = mu
         self.eFermi = self.get_Fermi_level1(self.filling)
         #self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
@@ -767,16 +792,13 @@ class TetraSingleBandSC(System):
         vl = np.sort(vl)
         return vl[iband]
 
-    #@njit(float, float64[:,:], int)
-    def filling1(self, E0, Eall, Nk):
-        """
-        calculates filling for a given Fermi level E0
-        uses global variables Eall, Nk
-        """
-        # select the particle sector of hamiltonian for calculating filling
-        Eparticle = Eall[0]
-        return sum(self.fermiDist(Eparticle-E0))/float(Nk)
+    def get_density(self, E0,Eall,Nvol,Evecs=None):
+        density_by_orb = self.filling_multiband(E0=E0,Eall=Eall,Nvol=Nvol, Evecs=Evecs)
+        # only return particle density (i.e. first orbital) as opposed to contrubitions from hole density
+        return density_by_orb[0]
 
+    def filling_vs_energy(self, isSaveFig=False):
+        print("SC model needs a different version of this method. Exiting...")
 
 class HexaSingleBand(System):
     def __init__(self, filling=None):
