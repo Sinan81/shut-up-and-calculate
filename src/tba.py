@@ -429,7 +429,7 @@ class CuprateSingleBand(System):
         self.jfactors = (self.jfact1, self.jfact2, self.jfact3)
         self.hfactors_left = self.get_hlist()
         self.hfactors_right = self.get_hlist_right()
-        self.gbasis = [ self.g1, self.g2, self.g3, self.g4 , 1]
+        self.gbasis = [ self.g1, self.g2, self.g3, self.g4 , self.one]
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
@@ -575,6 +575,10 @@ class CuprateSingleBand(System):
     @staticmethod
     def g4(k):
         return sin(k[1])
+
+    @staticmethod
+    def one(k):
+        return 1
 
     @staticmethod
     def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):

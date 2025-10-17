@@ -8,6 +8,7 @@ from multiprocessing import Pool
 import os
 import pickle
 import warnings
+import pdb
 
 # extras
 # numba results in 30x speed up!!!
@@ -98,7 +99,37 @@ class Chi:
         else:
             return -(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
-    @jit()
+
+    def real_static_gbasis(self, q):
+        """
+        Real part of zero freq susceptibility integrand
+        """
+        # TODO reduce the number of integrations by using symmetries
+        # a 12x reduction should be possible
+        qx, qy = q
+
+        cell = self.system.crystal
+
+        r = dblquad(
+                lambda kx, ky: self.real_integ_static_gbasis(kx, ky, qx, qy),
+                cell.integ_xmin,
+                cell.integ_xmax,
+                cell.gfun,
+                cell.hfun,
+                # it is ok to comment out the following
+                # we specify this to speed calculations up by 2.5x
+                # when we set epsabs to 0.1, the precision of the results
+                # changed at the most up to third decimal place
+                # consistent with 0.1 divided by normalisation factor 4*pi^2
+                epsabs=0.1,
+            )[0]
+        # normalise
+        r = r / cell.fbz_area
+        print(r)
+        return r
+
+
+    #@jit()
     def real_integ_static_gbasis(self, kx, ky, qx, qy):
         """
         Real part of susceptibility integrand
@@ -125,7 +156,7 @@ class Chi:
             return -1*cfact*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
 
-    def _gbasis_bare(self, _xy):
+    def gbasis_bare(self, _xy):
         """
         calculate bare current susceptibility
         """
@@ -134,9 +165,9 @@ class Chi:
         for gfunc in self.system.gbasis:
             self.extra_sus_factor = (gfunc, gfunc)
             with PPool(npool) as p:
-                chi = p.map(self.real_static, _xy)
+                chi = p.map(self.real_static_gbasis, _xy)
             Z = Z + (chi,)
-            return Z
+        return Z
 
 
     def _calc_cuts(self,ncuts,num):
