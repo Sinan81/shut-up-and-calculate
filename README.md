@@ -45,6 +45,8 @@ The following references are recommended for topics discussed in this repository
 
 [Random Phase Approximation (RPA)](docs/rpa.md)
 
+Generalized Random Phase Approximation (gRPA)
+
 Cuprate Single Band
 
 Cuprate Three Band
