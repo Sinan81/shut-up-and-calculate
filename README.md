@@ -55,7 +55,7 @@ Cuprate Four Band LCO
 
 [D-density-wave (DDW)](docs/ddw.md)
 
-Superconductivity
+Tetra Single Band Superconductor
 
 Hexa Single Band
 
