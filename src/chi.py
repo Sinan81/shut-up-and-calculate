@@ -139,7 +139,7 @@ class Chi:
         q = (qx,qy)
 
         if len(self.extra_sus_factor) == 1:
-            cfact = self.extra_sus_factor(k)
+            cfact = self.extra_sus_factor[0](k)
         else:
             gleft, gright = self.extra_sus_factor
             cfact = gleft(k)*gright(k)
@@ -159,15 +159,72 @@ class Chi:
     def gbasis_bare(self, _xy):
         """
         calculate bare current susceptibility
+        calculate bare current susceptibility along gbasis:
+        chi0^tilde_ij = sum_k G(k) G(k+q) g_i(k) g_j(k)
+        where g_i is the ith gbasis function.
+        To be used in generalized RPA calcs with ladder diagrams
         """
         Z = ()
-        # gbasis is diagonal. Hence a single for loop is sufficient
+        # gbasis is diagonal. Hence a single for loop is sufficient #TODO double check this
+        for gfunc_left in self.system.gbasis:
+            for gfunc_right in self.system.gbasis:
+                self.extra_sus_factor = (gfunc_left, gfunc_right)
+                if len(_xy)==1:
+                    chi = self.real_static_gbasis(_xy[0])
+                else:
+                    with PPool(npool) as p:
+                        chi = p.map(self.real_static_gbasis, _xy)
+                Z = Z + (chi,)
+        # return is N_gbasis x N_q
+        #     q1  q2 q3
+        # g1
+        # g2
+        # g3
+
+        return np.array(Z)
+
+
+    def gbasis_bare_partial(self, _xy):
+        """
+        calculate bare current susceptibility along gbasis:
+        A_i = sum_k G(k) G(k+q) g_i(k)
+        where g_i is the ith gbasis function.
+        To be used in generalized RPA calcs with ladder diagrams
+        """
+        Z = ()
         for gfunc in self.system.gbasis:
-            self.extra_sus_factor = (gfunc, gfunc)
-            with PPool(npool) as p:
-                chi = p.map(self.real_static_gbasis, _xy)
+            self.extra_sus_factor = (gfunc,)
+            if len(_xy)==1:
+                chi = self.real_static_gbasis(_xy[0])
+            else:
+                with PPool(npool) as p:
+                    chi = p.map(self.real_static_gbasis, _xy)
             Z = Z + (chi,)
-        return Z
+        return np.array(Z)
+
+
+    def gbasis_effective_interaction(self,q):
+        qx,qy = q
+        # vrho_gbasis = V_xc_gbasis -2*V_direct_gbasis
+        vrho = self.system.vmat_exchange_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn) \
+               - 2*self.system.vmat_direct_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn)
+
+        qtuple = (q,)
+        chi_tilde = self.gbasis_bare(qtuple).reshape(5,5)
+        denom = np.diag(np.ones(5)) - vrho @ chi_tilde
+        denom_inv = np.linalg.inv(denom)
+        return denom_inv @ vrho
+
+
+    def gbasis_chi(self,q):
+        print("### q is:",q)
+        qx,qy = q
+        qtuple = (q,)
+
+        Amat = self.gbasis_bare_partial(qtuple)
+        Gmat = self.gbasis_effective_interaction(q)
+
+        return self.real_static(q) + Amat.T @ Gmat @ Amat
 
 
     def _calc_cuts(self,ncuts,num):
@@ -192,7 +249,6 @@ class Chi:
                 else: # multi band
                     print('multi band chi not implemented yet')
             self.cuts = Zcuts
-
 
 
     def _plot_individual_cuts(self,ncuts,num,axlist):
@@ -270,7 +326,6 @@ class Chi:
             procedural version is 7x faster
             shiftPlot: set to 'pi' to create a plot around (pi,pi) as opposed to (0.,0.)
         """
-        import pickle
 
         if self.system.rank > 1:
             print("Susceptibility calculation isn't implemented for multi orbital systems yet.")
@@ -295,16 +350,13 @@ class Chi:
 
         Z = self.run_npool(X,Y)
 
-        #with open("objs.pkl", "wb") as f:
-        #    pickle.dump([Z, X, Y], f)
-
         if show:
             self.plot_vs_q(Z, X, Y)
 
         return Z, X, Y
 
 
-    def plot_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='bare'):
+    def plot_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='bare', Nq=3):
 
         if chi_type == 'bare':
             ttag='Bare susceptibility'
@@ -322,7 +374,15 @@ class Chi:
             else:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_vs_q()...')
-                Z, X, Y = self.calc_vs_q(rpa='direct_only', plot_zone=plot_zone)
+                Z, X, Y = self.calc_rpa_vs_q(rpa='direct_only', plot_zone=plot_zone)
+
+        if chi_type == 'grpa':
+            ttag='gRPA susceptibility'
+            if self.grpa is None:
+                print('No previous Chi calculation found: self.chi.bare is "None"')
+                print('Running self.calc_vs_q()...')
+                self.calc_rpa_vs_q(rpa_type='grpa', plot_zone=plot_zone, Nq=Nq)
+            Z, X, Y = self.grpa
 
         #matplotlib.use("TkAgg")
 
@@ -359,10 +419,6 @@ class Chi:
             plt.savefig(self.system.__name__ + "_susceptibility.png")
         plt.show()
 
-        # TODO figure out how to save a fig for easly loading later
-        #    with open('fig.pkl', 'wb') as f:
-        #        pickle.dump([fig], f)
-
         return plt
 
 
@@ -384,13 +440,24 @@ class Chi:
 
         if rpa_type == 'direct_only':
             chi0, X, Y = self.bare
-            model = self.system.model
             def f(qx,qy):
-                return model.vmat_direct( qx, qy, model.U, model.V, model.Vnn)
+                return self.system.vmat_direct( qx, qy, self.system.U, self.system.V, self.system.Vnn)
             Vmat = np.vectorize(f)
             denom = 1 - np.multiply(chi0, Vmat(X,Y))
             Z = np.divide(chi0, denom)
             self.rpa = (Z, X, Y)
+
+        if rpa_type == 'grpa':
+            chi0, X, Y = self.bare
+            # now zip X,Y so that we can use pool
+            x = X.reshape(X.size)
+            y = Y.reshape(Y.size)
+            _xy = list(zip(x, y))
+
+            with PPool(npool) as p:
+                chi = p.map(self.gbasis_chi, _xy)
+            Z = np.reshape(chi, X.shape)
+            self.grpa = (Z, X, Y)
 
 
     def rpa_get_critical_value(self, q, prange=(0,3), param='U', plot=False):

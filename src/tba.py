@@ -434,6 +434,9 @@ class CuprateSingleBand(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.U = 0.5
+        self.V = 0.5
+        self.Vnn = 0.5
 
     @staticmethod
     @jit(nopython=True)
@@ -559,7 +562,17 @@ class CuprateSingleBand(System):
         mq = (-q[0],-q[1])      # -q
         return exp(1j*kpq[1]) # h4b(kpq,mq)
 
-    # gbasis
+
+    # current operator goes like J ~ c1*c2 - c2*c1, hence the pairs of h factors.
+    #hlist = [ (h1a, h1b), (h2a,h2b), (h3a,h3b), (h4a,h4b) ]
+    def get_hlist(self):
+        return [ (self.h1a, self.h1b), (self.h2a, self.h2b)]
+
+    def get_hlist_right(self):
+        return [ (self.h1a_right, self.h1b_right), (self.h2a_right, self.h2b_right) ]
+
+
+    # gbasis to be used in extended/generalized RPA calc
     @staticmethod
     def g1(k):
         return cos(k[0])
@@ -581,23 +594,28 @@ class CuprateSingleBand(System):
         return 1
 
     @staticmethod
-    def vmat_direct(qx,qy,U=0.5,V=0.5,Vnn=0.5):
+    def vmat_direct(qx,qy,U=0., V=0.,Vnn=0.):
         return U + V*( cos(qx) + cos(qy)) + Vnn*2*cos(qx)*cos(qy)
 
-    # current operator goes like J ~ c1*c2 - c2*c1, hence the pairs of h factors.
-    #hlist = [ (h1a, h1b), (h2a,h2b), (h3a,h3b), (h4a,h4b) ]
-    def get_hlist(self):
-        return [ (self.h1a, self.h1b), (self.h2a, self.h2b)]
+    @staticmethod
+    def vmat_direct_gbasis(qx,qy,U=0., V=0.,Vnn=0.):
+        len_gbasis=5
+        # for now, comment out Vnn
+        # in order to account for Vnn, one should add the following extra gbasis functions
+        # cos(kx)cos(ky)
+        # cos(kx)sin(ky)
+        # sin(kx)cos(ky)
+        # sin(kx)sin(ky)
 
-    def get_hlist_right(self):
-        return [ (self.h1a_right, self.h1b_right), (self.h2a_right, self.h2b_right) ]
+        vnz = U + V*( cos(qx) + cos(qy)) #+ Vnn*2*cos(qx)*cos(qy)
+        vmat = np.diag([0,0,0,0,vnz])
+        return vmat
 
-
-#    #cuprate_single_band.vmat_direct = vmat_direct
-#    self.U = 0         # initialize local interaction
-#    self.V = 0        # initialize nearest neighbour interaction
-#    self.Vnn = 0     # initialize next nearest neighbour
-#    self.vbasis = None   # to be used in gRPA
+    @staticmethod
+    def vmat_exchange_gbasis(qx,qy,U=0., V=0.,Vnn=0.):
+        len_gbasis=5
+        vmat = np.diag([V, V, V, V, U])
+        return vmat
 
 
 class CuprateThreeBand(System):
