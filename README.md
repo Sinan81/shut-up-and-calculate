@@ -45,7 +45,17 @@ The following references are recommended for topics discussed in this repository
 
 [Random Phase Approximation (RPA)](docs/rpa.md)
 
+Cuprate Single Band
+
+Cuprate Three Band
+
+Cuprate Four Band LCO
+
 [D-density-wave (DDW)](docs/ddw.md)
+
+Superconductivity
+
+Hexa Single Band
 
 # To-Do
 - Multiband susceptibility
