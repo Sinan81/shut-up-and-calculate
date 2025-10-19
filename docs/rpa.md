@@ -33,11 +33,11 @@ On the other hand cosine terms in interaction function have tendency to emphesiz
 ```python
 from tba import *
 x = System()
-x.model.U=1.65
-x.model.V=0
-x.model.Vnn=0 # Vprime
-x.chi.calc_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
-x.chi.plot_vs_q(chi_type='charge_rpa')
+x.U=1.65
+x.V=0
+x.Vnn=0 # Vprime
+x.chic.calc_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
+x.chic.plot_vs_q(chi_type='rpa')
 ```
 giving:
 
@@ -47,14 +47,14 @@ In this calculation we note that RPA susceptibility is about an order of magnitu
 This is because for the selected parameter values, system is near critical: in fact $\chi$ will diverge at $U=1.74$ with all other parameters kept the same.
 $\chi$ maximum and corresponding momenta, to be denote by $q^*$, can be obtained via
 ```python
-qstar = get_max_3D(mysystem.chi.rpa)
+qstar = get_max_3D(mysystem.chic.rpa)
 ```
 For a given $\mathbf q^*$, a critical parameter value can be determined by plotting inverse RPA susceptibility, and finding zero crossing:
 ```python
 from tba import * ; x = System()
 # assume qstar is pi,pi
 qstar = (np.pi, np.pi)
-x.chi.rpa_get_critical_value(qstar,param='U',plot=True)
+x.chic.rpa_get_critical_value(qstar,param='U',plot=True)
 ```
 giving
 
