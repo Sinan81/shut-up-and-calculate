@@ -368,12 +368,11 @@ class Chi:
 
         if chi_type == 'rpa':
             ttag='RPA susceptibility'
-            if self.rpa is not None:
-                Z, X, Y = self.rpa
-            else:
+            if self.rpa is None:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_vs_q()...')
-                Z, X, Y = self.calc_rpa_vs_q(rpa='direct_only', plot_zone=plot_zone)
+                self.calc_rpa_vs_q(rpa_type='direct_only', plot_zone=plot_zone, Nq=Nq)
+            Z, X, Y = self.rpa
 
         if chi_type == 'grpa':
             ttag='gRPA susceptibility'
