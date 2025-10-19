@@ -217,7 +217,6 @@ class Chi:
 
 
     def gbasis_chi(self,q):
-        print("### q is:",q)
         qx,qy = q
         qtuple = (q,)
 
@@ -448,16 +447,24 @@ class Chi:
             self.rpa = (Z, X, Y)
 
         if rpa_type == 'grpa':
+            tic = time.perf_counter()
+
             chi0, X, Y = self.bare
             # now zip X,Y so that we can use pool
             x = X.reshape(X.size)
             y = Y.reshape(Y.size)
             _xy = list(zip(x, y))
 
+            # in paralel, it takes 1 min per 10 q points
+            # Nq=8 takes about 6 minutes.
             with PPool(npool) as p:
                 chi = p.map(self.gbasis_chi, _xy)
             Z = np.reshape(chi, X.shape)
             self.grpa = (Z, X, Y)
+            toc = time.perf_counter()
+            print(f"grpa run time: {toc - tic:.1f} seconds")
+
+
 
 
     def rpa_get_critical_value(self, q, prange=(0,3), param='U', plot=False):
