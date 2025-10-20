@@ -104,3 +104,11 @@ def test_fill_vs_energy_single():
         5.00105226e-01, 6.90044280e-01, 8.14559508e-01, 9.13370561e-01])
     energy,fill = x.filling_vs_energy(dE=1, isplot=False)
     assert np.allclose(fill,fill_ref)
+
+# takes 12s
+#@pytest.mark.slow
+def test_chic_grpa():
+    x = CuprateSingleBand()
+    chi_ref = 0.0796526661882338
+    chi = x.chic.gbasis_chi((0.1,0.3))
+    assert np.allclose(chi,chi_ref)
