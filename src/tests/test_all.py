@@ -106,7 +106,7 @@ def test_fill_vs_energy_single():
     assert np.allclose(fill,fill_ref)
 
 # takes 12s
-#@pytest.mark.slow
+@pytest.mark.slow
 def test_chic_grpa():
     x = CuprateSingleBand()
     chi_ref = 0.0796526661882338
