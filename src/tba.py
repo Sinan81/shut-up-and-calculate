@@ -650,7 +650,7 @@ class CuprateThreeBand(System):
         t3 = 0.
         ic = complex(0,1)
         # 3-band case (Emery model for Cuprates)
-        m = np.matrix([ [ ed, 2.*tpd*np.sin(kx/2.), -2.*tpd*np.sin(ky/2.) ],
+        m = np.array([ [ ed, 2.*tpd*np.sin(kx/2.), -2.*tpd*np.sin(ky/2.) ],
                       [ 2.*tpd*np.sin(kx/2.), ex, -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.)],
                       [ -2.*tpd*np.sin(ky/2.), -4.*tpp*np.sin(kx/2.)*np.sin(ky/2.), ey  ]
                     ])
@@ -709,7 +709,7 @@ class CuprateFourBandLCO(System):
         t43 = 2*t2*( np.cos( (kx+ky)/2 ) - np.cos( (kx-ky)/2 ) )
         t44 = eps_py + 2*t3*np.cos(ky) + 2*t6*(np.cos(kx + ky) + np.cos(kx-ky) )
 
-        m = np.matrix([ [ t11, np.conj(t21),  np.conj(t31), np.conj(t41) ],
+        m = np.array([ [ t11, np.conj(t21),  np.conj(t31), np.conj(t41) ],
                       [ t21, t22,           np.conj(t32), np.conj(t42) ],
                       [ t31, t32,           t33,          np.conj(t43) ],
                       [ t41, t42,           t43,            t44        ]
@@ -757,7 +757,7 @@ class TetraSingleBandDDW(System):
         ic = complex(0,1)
 
         # basis: c_k, c_{k+Q} where Q=(\pi,\pi)
-        m = np.matrix([
+        m = np.array([
                 [ Ek,       1j*Wk ],
                 [ -1j*Wk,   EkQ    ]
                 ])
@@ -802,7 +802,7 @@ class TetraSingleBandSC(System):
         Dk= D0*0.5*(cos(kx) - cos(ky))
 
         # basis: c_k_spin_up^dagger, c_{-k}_spin_down
-        m = np.matrix([
+        m = np.array([
                 [ Ek-self.mu,       Dk ],
                 [ Dk,   self.mu -Ek]
                 ])
