@@ -60,7 +60,71 @@ giving
 
 ![RPA Susceptibility](/images/rpa_find_critical_value.png)
 
-# TO-DO
+# Generalized RPA (gRPA) with exchange terms
 
-- A through discussion of RPA theory
-- generilized RPA with exchange interactions
+In addition to the usual bubble type diagrams, one can also infinitely some so called ladder diagrams originating from exchange interactions, to be labeled by $V_X$. A given exchange vertex of form $f(k_1-k_2)$ can be expressed as $g(k_1)h(k_2)$ so that $k_1$ and $k_2$ integrations are decoupled and can be performed. This decoupling leads to a function basis over which bare susceptibility, and interactions are projected, so that the infinite sum of ladder diagrams can performed. This is the generalized RPA (gRPA), of which details is as follows. 
+
+We shall explain details of gRPA using the example of a single-band tetra system. In the presence of direct interaction $U$ and near neighbour interaction $V$, decoupling of $V\left (\cos(k_{1x} -k_{2x}) + \cos(k_{1y} - k_{2y}) \right )$ using trigonometric identities leads to a function basis of 
+```math
+     \cos(k_x), \cos(k_y), \sin(k_x), \sin(k_y)
+```
+. in order to account for onsite U, identity term is also added to this basis. From now on we shall call it *g-basis*.
+
+```math
+\chi(q) = \chi_0(q) + \sum_{ij} A_i \tilde \Gamma_{ij} A_j
+```
+where
+```math
+\tilde {\mathbf \Gamma} = [ 1 - \tilde V_\rho \tilde \chi_0 (q) ]^{-1} \tilde V_\rho 
+```
+is the effective interaction matrix in the g-basis,
+```math
+\tilde V_\rho = \tilde V_X -2 \tilde V_D
+```
+is the interaction vertex in g-basis,
+```math
+\tilde V_X = 
+\begin{bmatrix}
+V & 0 & 0 & 0 & 0 \\
+0 & V & 0 & 0 & 0 \\
+0 & 0 & V & 0 & 0 \\
+0 & 0 & 0 & V & 0 \\
+0 & 0 & 0 & 0 & U
+\end{bmatrix}
+```
+is the ladder (exchange interaction) vertex in g-basis,
+```math
+\tilde V_D = 
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & U
+\end{bmatrix}
+```
+is the bubble (direct interaction) vertex in g-basis, 
+```math
+\tilde \chi_0^{ij} (q) = \frac{1}{N_k} \sum_k g_i(k) \chi_0(k,q) g_j(k)
+```
+is the matrix of bare susceptibility projected to g-basis,
+```math
+\tilde A_i(q) = \frac{1}{N_k} \sum_k g_i(k) \chi_0(k,q)
+```
+is the array of bare susceptibility partially projected to g-basis. Infinite sum of ladder/exchange diagrams as well as bubbles has been shown to be important in charge order or superconductivity etc calculations.
+
+An example numerical calculation of interacting $\chi$ in gRPA is as follows:
+```python
+from tba import *
+x = System()
+x.U=0.5
+x.V=0.5
+x.Vnn=0 # not implemented in gbasis yet, hence set to zero.
+x.chic.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
+```
+
+
+Refs:
+
+- [Collective excitations in the normal state of Cu-O-based superconductors, Littlewood etal, 1989](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.39.12371)
+- [Spatially Modulated Electronic Nematicity in the Three-Band Model of Cuprate Superconductors, Bulut et al, 2013](https://arxiv.org/abs/1305.3301)
