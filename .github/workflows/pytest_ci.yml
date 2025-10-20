@@ -34,4 +34,4 @@ jobs:
       run: |
         conda install pytest
         cd src
-        python -m pytest
+        pytest -v
