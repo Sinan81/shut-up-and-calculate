@@ -90,7 +90,7 @@ class System:
             Eall = np.sort(Eall)
         return Eall
 
-    def filling_vs_energy(self, isSaveFig=False):
+    def filling_vs_energy(self, isSaveFig=False, dE=0.01, isplot=True):
         """
         Plot filling vs energy.
         Filling is density of states integrated up to a given energy level.
@@ -115,16 +115,18 @@ class System:
         vfermi = np.vectorize(self.fermiDist)
         def f(x): return sum(sum(vfermi(Eall-x)))/float(Nk)
 
-        elist = np.arange(Emin,Emax,0.01)
+        elist = np.arange(Emin,Emax,dE)
         vfilling = np.vectorize(f)
 
-        plt.plot(elist,vfilling(elist))
+        afill = vfilling(elist)
+        plt.plot(elist,afill)
         plt.xlabel("Fermi level")
         plt.ylabel("electron density")
         if isSaveFig:
             plt.savefig(self.__name__ + '_filling_vs_fermi_level.png')
-        plt.show()
-        #return elist,vfilling
+        if isplot:
+            plt.show()
+        return elist,afill
 
     def get_density(self, E0,Eall,Nvol,Evecs=None):
         return self.filling1(E0,Eall,Nvol)
