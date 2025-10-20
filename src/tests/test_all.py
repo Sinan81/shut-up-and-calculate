@@ -97,3 +97,10 @@ def test_fill_vs_energy_multi():
             2.00000000e+00, 2.12335469e+00, 2.63501520e+00, 2.97435109e+00])
     energy,fill = x.filling_vs_energy(dE=1, isplot=False)
     assert np.allclose(fill,fill_ref)
+
+def test_fill_vs_energy_single():
+    x = CuprateSingleBand()
+    fill_ref = np.array([6.96572793e-04, 8.47273359e-02, 1.84324947e-01, 3.08422484e-01,
+        5.00105226e-01, 6.90044280e-01, 8.14559508e-01, 9.13370561e-01])
+    energy,fill = x.filling_vs_energy(dE=1, isplot=False)
+    assert np.allclose(fill,fill_ref)
