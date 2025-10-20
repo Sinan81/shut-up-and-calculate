@@ -15,24 +15,6 @@ from numba import jit
 import numba
 from numpy import pi, sqrt, cos, sin
 import numpy as np
-import scipy.integrate as integrate
-from scipy.integrate import dblquad
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from mpl_toolkits.mplot3d import Axes3D
-from pathos.multiprocessing import ProcessingPool as PPool
-
-#matplotlib.use("TkAgg")
-
-# set npool to number of cpus/threads the machine has
-ncpus = len(os.sched_getaffinity(0))
-npool = ncpus if ncpus else 2
-
-ic = complex(0, 1.0)
-
-kT = 0.01
 
 
 def make_Eall(xx,yy,func_em):
@@ -86,15 +68,3 @@ def get_Evecs(xx,yy,func_em, flatten=True):
         return Evecs_flat
     else:
         return Evecs, Eall
-
-
-
-
-#def eband(kx,ky,iband,em):
-#    """
-#    make energy bands
-#    """
-#    vl,vc = np.linalg.eig(em(kx,ky))
-#    vl = np.sort(vl)
-#    return vl[iband]
-#
