@@ -68,8 +68,7 @@ We shall explain details of gRPA using the example of a single-band tetra system
 ```math
      \cos(k_x), \cos(k_y), \sin(k_x), \sin(k_y)
 ```
-. in order to account for onsite U, identity term is also added to this basis. From now on we shall call it *g-basis*.
-
+. in order to account for onsite U, identity term is also added to this basis. From now on we shall call it *g-basis*. As a result interacting susceptibility can be calculated as:
 ```math
 \chi(q) = \chi_0(q) + \sum_{ij} A_i \tilde \Gamma_{ij} A_j
 ```
@@ -100,10 +99,10 @@ is the ladder (exchange interaction) vertex in g-basis,
 0 & 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 \\
-0 & 0 & 0 & 0 & U
+0 & 0 & 0 & 0 & U(q)
 \end{bmatrix}
 ```
-is the bubble (direct interaction) vertex in g-basis, 
+is the bubble (direct interaction) vertex in g-basis, $U(q) = U + V( \cos q_x + \cos q_y )$
 ```math
 \tilde \chi_0^{ij} (q) = \frac{1}{N_k} \sum_k g_i(k) \chi_0(k,q) g_j(k)
 ```
@@ -111,7 +110,19 @@ is the matrix of bare susceptibility projected to g-basis,
 ```math
 \tilde A_i(q) = \frac{1}{N_k} \sum_k g_i(k) \chi_0(k,q)
 ```
-is the array of bare susceptibility partially projected to g-basis. Infinite sum of ladder/exchange diagrams as well as bubbles has been shown to be important in charge order or superconductivity etc calculations.
+is the array of bare susceptibility partially projected to g-basis. 
+
+For completeness, we shall also define the usual forms of interaction functions:
+```math
+\begin{align}
+V(k_1-k_2)  & = &   \sum_{ij} g_i(k_1) \tilde V_X^{ij} g_j(k_2) \\
+V(q)  & = &  \sum_{ij} g_i \tilde V_D^{ij}(q) g_j \\
+\Gamma(k_1,k_2,q) & = & \sum_{ij} g_i(k_1) \tilde \Gamma_{ij}(q) g_j(k_2)
+\end{align}
+```
+
+
+Infinite sum of ladder/exchange diagrams as well as bubbles has been shown to be important in charge order or superconductivity etc calculations.
 
 An example numerical calculation of interacting $\chi$ in gRPA is as follows:
 ```python
