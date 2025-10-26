@@ -158,8 +158,7 @@ class Chi:
 
     def gbasis_bare(self, _xy):
         """
-        calculate bare current susceptibility
-        calculate bare current susceptibility along gbasis:
+        calculate bare susceptibility along gbasis:
         chi0^tilde_ij = sum_k G(k) G(k+q) g_i(k) g_j(k)
         where g_i is the ith gbasis function.
         To be used in generalized RPA calcs with ladder diagrams
@@ -186,7 +185,7 @@ class Chi:
 
     def gbasis_bare_partial(self, _xy):
         """
-        calculate bare current susceptibility along gbasis:
+        calculate partial bare susceptibility along gbasis:
         A_i = sum_k G(k) G(k+q) g_i(k)
         where g_i is the ith gbasis function.
         To be used in generalized RPA calcs with ladder diagrams
@@ -217,6 +216,12 @@ class Chi:
 
 
     def gbasis_chi(self,q):
+        """Calculate Chi within generalized RPA with infinite sum of
+        ladder, bubble, and mixed diagrams with non-local interaction.
+        Ref: Collective excitations in the normal state of Cu-O-based superconductors,
+        Littlewood etal, 1989
+        https://journals.aps.org/prb/abstract/10.1103/PhysRevB.39.12371
+        """
         qx,qy = q
         qtuple = (q,)
 
