@@ -96,12 +96,14 @@ def test_fermi_surface_tetra_three_band():
     assert np.allclose(fs[0], cx_ref)
     assert np.allclose(fs[1], cy_ref)
 
+
 def test_fill_vs_energy_multi():
     x = CuprateThreeBand()
     fill_ref = np.array([2.38953066e-03, 5.76927926e-01, 1.94393953e+00, 2.00000000e+00,
             2.00000000e+00, 2.12335469e+00, 2.63501520e+00, 2.97435109e+00])
     energy,fill = x.filling_vs_energy(dE=1, isplot=False)
     assert np.allclose(fill,fill_ref)
+
 
 def test_fill_vs_energy_single():
     x = CuprateSingleBand()

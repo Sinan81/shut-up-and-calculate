@@ -782,17 +782,14 @@ class TetraSingleBandDDW(System):
 
 
 class TetraSingleBandSC(System):
-    def __init__(self, filling=0.5, D0=0.035, mu=-0.2925):
+    def __init__(self, filling=0.5, D0=0.035, mu=-0.19614257812500002, eFermi=None):
         self.D0 = D0
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_SC'
         self.filling = self.set_filling(filling)
         self.mu = mu
-        self.eFermi = self.get_Fermi_level1(self.filling)
-        #self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
-        #self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
-        #self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self)
         self.ef_plot_offset=0.
 
@@ -830,8 +827,6 @@ class TetraSingleBandSC(System):
         # only return particle density (i.e. first orbital) as opposed to contrubitions from hole density
         return density_by_orb[0]
 
-    def filling_vs_energy(self, isSaveFig=False):
-        print("SC model needs a different version of this method. Exiting...")
 
 class HexaSingleBand(System):
     def __init__(self, filling=None):
