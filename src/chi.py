@@ -469,8 +469,6 @@ class Chi:
             print(f"grpa run time: {toc - tic:.1f} seconds")
 
 
-
-
     def rpa_get_critical_value(self, q, prange=(0,3), param='U', plot=False):
         """
         get critical value for a system parameter
@@ -552,7 +550,7 @@ class ChiCurrent(Chi):
 #                Z = Z + (np.reshape(chi, X.shape),)
 #            self.current_bare = (Z,X,Y)
 #        elif sus_type == 'current_v2':
-        zflat = self._curr_sus_bare(_xy)
+        zflat = self.curr_sus_bare(_xy)
         Z = ()
         for z in zflat:
             Z = Z + (np.reshape(zflat, X.shape),)
@@ -622,7 +620,7 @@ class ChiCurrent(Chi):
             return -1*cfact*(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
 
-    def _curr_sus_bare(self, _xy):
+    def curr_sus_bare(self, _xy):
         """
         calculate bare current susceptibility
         """

@@ -8,18 +8,19 @@ def test_fermi_surface():
     x = CuprateSingleBand(filling=0.40)
     fs = x.plot_Fermi_surface_contour(isExtendedZone=False, dk=np.pi/4,isShow=False)
     # expected Fermi surface segments
-    s0 = np.array([ 0.75,        0.67299941,  0.5,         0.42299941,  0.25,        0.06410413,
-                    0.,         -0.06410413, -0.25,       -0.42299941, -0.5,        -0.67299941,
-                    -0.75,       -0.81410413, -0.75,       -0.67299941, -0.5,        -0.42299941,
-                    -0.25,       -0.06410413,  0.06410413,  0.25,        0.42299941,  0.5,
-                    0.67299941,  0.75      ])
+    s0 = np.array([ 0.75      ,  0.674725  ,  0.5       ,  0.424725  ,  0.25      ,
+        0.06827007,  0.        , -0.06827007, -0.25      , -0.424725  ,
+       -0.5       , -0.674725  , -0.75      , -0.81827007, -0.75      ,
+       -0.674725  , -0.5       , -0.424725  , -0.25      , -0.06827007,
+        0.06827007,  0.25      ,  0.424725  ,  0.5       ,  0.674725  ,
+        0.75      ])
 
-    s1 = np.array( [-0.06410413, -0.25,       -0.42299941, -0.5,        -0.67299941, -0.75,
-             -0.81410413, -0.75, -0.67299941, -0.5,        -0.42299941, -0.25,
-             -0.06410413,  0. ,         0.06410413,  0.25,        0.42299941,  0.5,
-              0.67299941, 0.75, 0.75, 0.67299941,  0.5,         0.42299941,
-              0.25, 0.06410413])
-    #pdb.set_trace()
+    s1 = np.array([-0.06827007, -0.25      , -0.424725  , -0.5       , -0.674725  ,
+       -0.75      , -0.81827007, -0.75      , -0.674725  , -0.5       ,
+       -0.424725  , -0.25      , -0.06827007,  0.        ,  0.06827007,
+        0.25      ,  0.424725  ,  0.5       ,  0.674725  ,  0.75      ,
+        0.75      ,  0.674725  ,  0.5       ,  0.424725  ,  0.25      ,
+        0.06827007])
     assert np.allclose(fs[0], s0)
     assert np.allclose(fs[1], s1)
 
@@ -41,16 +42,17 @@ def test_susceptibility_charge_real_static():
     # very heavy computation so just pick a single point to calculate
     q = (pi/2,pi/2)
     x = CuprateSingleBand(filling=0.40)
-    chi_ref = 0.21320053290009247
+    chi_ref = 0.21539772496222803
     chi = x.chic.real_static(q)
     assert np.allclose(chi, chi_ref)
+
 
 def test_susceptibility_current_real_static():
     # very heavy computation so just pick a single point to calculate
     x = CuprateSingleBand()
-    chi_ref = 0.1500234000455209
-    out = x.chij.calc_vs_q(Nq=1)
-    chi = np.real(out[0][0][0][0])
+    chi_ref = 0.3837416386532734
+    q=(0.1,0.2)
+    chi = np.real(x.chij.curr_sus_bare((q,)))
     assert np.allclose(chi, chi_ref)
 
 
@@ -76,18 +78,21 @@ def test_fermi_surface_tetra_three_band():
     x = CuprateThreeBand(filling=2.40)
     fs = x.plot_Fermi_surface_contour(isExtendedZone=False, dk=np.pi/4,isShow=False)
     # expected Fermi surface segments
-    cx_ref = np.array([-0.01181665, -0.12964988, -0.25      , -0.36733857, -0.5       ,
-           -0.66032169, -0.75      , -1.        ,  0.75      ,  0.66032169,
-            0.5       ,  0.36733857,  0.25      ,  0.12964988,  0.01181665,
-           -1.        , -0.75      , -0.66032169, -0.5       , -0.36733857,
-           -0.25      , -0.12964988,  0.12964988,  0.25      ,  0.36733857,
-            0.5       ,  0.66032169,  0.75      ])
-    cy_ref = np.array([-1.        , -0.75      , -0.66032169, -0.5       , -0.36733857,
-           -0.25      , -0.12964988, -0.01181665, -0.12964988, -0.25      ,
-           -0.36733857, -0.5       , -0.66032169, -0.75      , -1.        ,
-            0.01181665,  0.12964988,  0.25      ,  0.36733857,  0.5       ,
-            0.66032169,  0.75      ,  0.75      ,  0.66032169,  0.5       ,
-            0.36733857,  0.25      ,  0.12964988])
+
+    cx_ref = np.array([ 0.75      ,  0.64444464,  0.5       ,  0.35571824,  0.25      ,
+        0.10834256,  0.        , -0.10834256, -0.25      , -0.35571824,
+       -0.5       , -0.64444464, -0.75      , -0.98055193, -0.75      ,
+       -0.64444464, -0.5       , -0.35571824, -0.25      , -0.10834256,
+        0.10834256,  0.25      ,  0.35571824,  0.5       ,  0.64444464,
+        0.75      ])
+
+    cy_ref = np.array([-0.10834256, -0.25      , -0.35571824, -0.5       , -0.64444464,
+       -0.75      , -0.98055193, -0.75      , -0.64444464, -0.5       ,
+       -0.35571824, -0.25      , -0.10834256,  0.        ,  0.10834256,
+        0.25      ,  0.35571824,  0.5       ,  0.64444464,  0.75      ,
+        0.75      ,  0.64444464,  0.5       ,  0.35571824,  0.25      ,
+        0.10834256])
+
     assert np.allclose(fs[0], cx_ref)
     assert np.allclose(fs[1], cy_ref)
 
@@ -109,6 +114,7 @@ def test_fill_vs_energy_single():
 @pytest.mark.slow
 def test_chic_grpa():
     x = CuprateSingleBand()
-    chi_ref = 0.0796526661882338
+    chi_ref = 0.19229039892309172
     chi = x.chic.gbasis_chi((0.1,0.3))
+    pdb.set_trace()
     assert np.allclose(chi,chi_ref)

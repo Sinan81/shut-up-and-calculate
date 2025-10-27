@@ -159,12 +159,15 @@ class System:
 
         # use bisection to find the Fermi level
         Emid = (Emin+Emax)/2.
-        tol = 0.01 #TODO decrase to 0.001
+        tol = 0.001
         dn = 5 #initialize
+        dn_list = []
         N_iter = 0
-        while dn>tol and N_iter < 10:
+        check_dn_ok = False
+        while not check_dn_ok:
             density = self.get_density(Emid,Eall,Nvol,Evecs)
             dn = abs(target_filling - density)
+            dn_list.append(dn)
             if density > target_filling: #Emid is big
                 Emax = Emid
                 Emid = (Emin+Emax)/2.
@@ -172,7 +175,13 @@ class System:
                 Emin = Emid
                 Emid = (Emin+Emax)/2.
             N_iter = N_iter + 1
-        return Emid
+            # make sure dn is less tol three times in a row.
+            if N_iter > 3:
+                check_dn_ok = bool(np.all(np.array(dn_list[-3:]) < tol))
+            if N_iter > 20:
+                print("Filling isn't converging for some reason. exiting at N_iter=20")
+                break
+        return Emid # new fermi level
 
     def make_cs(self,xx,yy):
         veband = np.vectorize(self.Eband)
