@@ -39,7 +39,7 @@ npool = ncpus if ncpus else 2
 
 ic = complex(0, 1.0)
 
-kT = 0.01
+#kT = 0.01
 
 
 class Chi:
@@ -93,7 +93,7 @@ class Chi:
         Ek = self.system.Eband(kx, ky)
         Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
-        Ecutoff = 1.0 * kT
+        Ecutoff = 1.0 * self.system.kT
         if abs(Ek - Ekq) < Ecutoff:
             return -self.system.fermiPrime(Ek - eFermi)
         else:
@@ -149,7 +149,7 @@ class Chi:
         Ek = self.system.Eband(kx, ky)
         Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
-        Ecutoff = 1.0 * kT
+        Ecutoff = 1.0 * self.system.kT
         if abs(Ek - Ekq) < Ecutoff:
             return -1*cfact*self.system.fermiPrime(Ek - eFermi)
         else:
@@ -613,7 +613,7 @@ class ChiCurrent(Chi):
         Ek = self.system.Eband(kx, ky)
         Ekq = self.system.Eband(kx + qx, ky + qy)
         ##    fermiPrime=0.
-        Ecutoff = 1.0 * kT
+        Ecutoff = 1.0 * self.system.kT
         if abs(Ek - Ekq) < Ecutoff:
             return -1*cfact*self.system.fermiPrime(Ek - eFermi)
         else:

@@ -45,7 +45,7 @@ npool = ncpus if ncpus else 2
 
 ic = complex(0, 1.0)
 
-kT = 0.01
+#kT = 0.01
 
 
 class System:
@@ -413,27 +413,28 @@ class System:
         return  orbital_resolved_filling
 
 
-    @staticmethod
-    @jit(nopython=True)
-    def fermiDist(x):
+    #@staticmethod
+    #@jit()
+    def fermiDist(self, x: float):
         "Fermi distribution"
-        return 0.5 * (1.0 - np.tanh(x / (2.0 * kT)))
+        return 0.5 * (1.0 - np.tanh(x / (2.0 * self.kT)))
 
 
-    @staticmethod
-    @jit(nopython=True)
-    def fermiPrime(x):
+    #@staticmethod
+    #@jit()
+    def fermiPrime(self, x: float):
         "Fermi distribution derivative"
-        g = x / (2.0 * kT)
-        denom = 4.0 * kT * (np.cosh(g) ** 2)
+        g = x / (2.0 * self.kT)
+        denom = 4.0 * self.kT * (np.cosh(g) ** 2)
         return -1.0 / denom
 
 
 class CuprateSingleBand(System):
-    def __init__(self, filling=None):
+    def __init__(self, filling=None, kT=0.01):
         self.crystal = Tetra()
         self.rank = 1
         self.__name__ = 'cuprate_single_band'
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         # Note that these factors should be multiplied by t_ij**2
@@ -630,10 +631,11 @@ class CuprateSingleBand(System):
 
 
 class CuprateThreeBand(System):
-    def __init__(self, filling=None):
+    def __init__(self, filling=None, kT=0.01):
         self.crystal = Tetra()
         self.rank = 3
         self.__name__ = 'cuprate_three_band'
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
@@ -676,10 +678,11 @@ class CuprateThreeBand(System):
 
 
 class CuprateFourBandLCO(System):
-    def __init__(self, filling=None):
+    def __init__(self, filling=None, kT=0.01):
         self.crystal = Tetra()
         self.rank = 4
         self.__name__ = 'cuprate_four_band_LCO'
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
@@ -735,11 +738,12 @@ class CuprateFourBandLCO(System):
 
 
 class TetraSingleBandDDW(System):
-    def __init__(self, filling=None):
+    def __init__(self, filling=None, kT=0.01):
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_DDW'
         self.isAFRBZ = True
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
@@ -782,11 +786,12 @@ class TetraSingleBandDDW(System):
 
 
 class TetraSingleBandSC(System):
-    def __init__(self, filling=0.5, D0=0.035, mu=-0.19614257812500002, eFermi=None):
+    def __init__(self, filling=0.5, kT=0.01, D0=0.035, mu=-0.19614257812500002, eFermi=None):
         self.D0 = D0
         self.crystal = Tetra()
         self.rank = 2
         self.__name__ = 'tetra_single_band_SC'
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.mu = mu
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
@@ -829,10 +834,11 @@ class TetraSingleBandSC(System):
 
 
 class HexaSingleBand(System):
-    def __init__(self, filling=None):
+    def __init__(self, filling=None, kT=0.01):
         self.crystal = Hexa()
         self.rank = 1
         self.__name__ = 'hexa_single_band'
+        self.kT = kT
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.spectra = Spectra(self)

@@ -118,5 +118,4 @@ def test_chic_grpa():
     x = CuprateSingleBand()
     chi_ref = 0.19229039892309172
     chi = x.chic.gbasis_chi((0.1,0.3))
-    pdb.set_trace()
     assert np.allclose(chi,chi_ref)
