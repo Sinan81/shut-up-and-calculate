@@ -6,6 +6,7 @@ import time
 import os
 import pickle
 import warnings
+import matplotlib.pyplot as plt
 
 from ebands import *
 ncpus = len(os.sched_getaffinity(0))
@@ -208,7 +209,7 @@ class Spectra:
         orb_wgt=False
         print("plot_Emin is:", plot_Emin)
         print("plot_Emax is:", plot_Emax)
-        Nw = int((self.Emax-self.Emin)/self.gamma)
+        Nw = int((plot_Emax-plot_Emin)/self.gamma)
         nedge = Nw*3 # even 2x Nw seems to be sufficient
         hist,edges = np.histogram(eflat, nedge)
         dE = edges[1]-edges[0]
