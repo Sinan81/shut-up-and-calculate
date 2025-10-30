@@ -36,8 +36,8 @@ x = System()
 x.U=1.65
 x.V=0
 x.Vnn=0 # Vprime
-x.chic.calc_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
-x.chic.plot_vs_q(chi_type='rpa')
+x.chis.calc_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
+x.chis.plot_vs_q(chi_type='rpa')
 ```
 giving:
 
@@ -47,14 +47,14 @@ In this calculation we note that RPA susceptibility is about an order of magnitu
 This is because for the selected parameter values, system is near critical: in fact $\chi$ will diverge at $U=1.74$ with all other parameters kept the same.
 $\chi$ maximum and corresponding momenta, to be denote by $q^*$, can be obtained via
 ```python
-qstar = get_max_3D(mysystem.chic.rpa)
+qstar = get_max_3D(mysystem.chis.rpa)
 ```
 For a given $\mathbf q^*$, a critical parameter value can be determined by plotting inverse RPA susceptibility, and finding zero crossing:
 ```python
 from tba import * ; x = System()
 # assume qstar is pi,pi
 qstar = (np.pi, np.pi)
-x.chic.rpa_get_critical_value(qstar,param='U',plot=True)
+x.chis.rpa_get_critical_value(qstar,param='U',plot=True)
 ```
 giving
 
@@ -62,9 +62,9 @@ giving
 
 # Generalized RPA (gRPA) with exchange terms
 
-In addition to the usual bubble type diagrams, one can also infinitely some so called ladder diagrams originating from exchange interactions, to be labeled by $V_X$. A given exchange vertex of form $f(k_1-k_2)$ can be expressed as $g(k_1)h(k_2)$ so that $k_1$ and $k_2$ integrations are decoupled and can be performed. This decoupling leads to a function basis over which bare susceptibility, and interactions are projected, so that the infinite sum of ladder diagrams can performed. This is the generalized RPA (gRPA), of which details is as follows. 
+In addition to the usual bubble type diagrams, one can also infinitely some so called ladder diagrams originating from exchange interactions, to be labeled by $V_X$. A given exchange vertex of form $f(k_1-k_2)$ can be expressed as $g(k_1)h(k_2)$ so that $k_1$ and $k_2$ integrations are decoupled and can be performed. This decoupling leads to a function basis over which bare susceptibility, and interactions are projected, so that the infinite sum of ladder diagrams can performed. This is the generalized RPA (gRPA), of which details is as follows.
 
-We shall explain details of gRPA using the example of a single-band tetra system. In the presence of direct interaction $U$ and near neighbour interaction $V$, decoupling of $V\left (\cos(k_{1x} -k_{2x}) + \cos(k_{1y} - k_{2y}) \right )$ using trigonometric identities leads to a function basis of 
+We shall explain details of gRPA using the example of a single-band tetra system. In the presence of direct interaction $U$ and near neighbour interaction $V$, decoupling of $V\left (\cos(k_{1x} -k_{2x}) + \cos(k_{1y} - k_{2y}) \right )$ using trigonometric identities leads to a function basis of
 ```math
      \cos(k_x), \cos(k_y), \sin(k_x), \sin(k_y)
 ```
@@ -74,7 +74,7 @@ We shall explain details of gRPA using the example of a single-band tetra system
 ```
 where
 ```math
-\tilde {\mathbf \Gamma} = [ 1 - \tilde V_\rho \tilde \chi_0 (q) ]^{-1} \tilde V_\rho 
+\tilde {\mathbf \Gamma} = [ 1 - \tilde V_\rho \tilde \chi_0 (q) ]^{-1} \tilde V_\rho
 ```
 is the effective interaction matrix in the g-basis,
 ```math
@@ -82,7 +82,7 @@ is the effective interaction matrix in the g-basis,
 ```
 is the interaction vertex in g-basis,
 ```math
-\tilde V_X = 
+\tilde V_X =
 \begin{bmatrix}
 V & 0 & 0 & 0 & 0 \\
 0 & V & 0 & 0 & 0 \\
@@ -93,7 +93,7 @@ V & 0 & 0 & 0 & 0 \\
 ```
 is the ladder (exchange interaction) vertex in g-basis,
 ```math
-\tilde V_D = 
+\tilde V_D =
 \begin{bmatrix}
 0 & 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 \\
@@ -110,7 +110,7 @@ is the matrix of bare susceptibility projected to g-basis,
 ```math
 \tilde A_i(q) = \frac{1}{N_k} \sum_k g_i(k) \chi_0(k,q)
 ```
-is the array of bare susceptibility partially projected to g-basis. 
+is the array of bare susceptibility partially projected to g-basis.
 
 For completeness, we shall also define the usual forms of interaction functions:
 ```math
@@ -131,7 +131,7 @@ x = System()
 x.U=0.5
 x.V=0.5
 x.Vnn=0 # not implemented in gbasis yet, hence set to zero.
-x.chic.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
+x.chis.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
 ```
 
 
