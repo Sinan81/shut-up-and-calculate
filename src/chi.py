@@ -424,6 +424,13 @@ class Chi:
 
         return plt
 
+    @staticmethod
+    def get_rpa_denominator(chi0, Vmat):
+        # sign is '+' for charge sus
+        # hence local interaction supress the charge response
+        # while non-local interaction can select one are of k-space over another
+        return 1 + np.multiply(chi0, Vmat)
+
 
     def calc_rpa_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
             omega=None, plot_zone='full',rpa_type='direct_only'):
@@ -446,7 +453,7 @@ class Chi:
             def f(qx,qy):
                 return self.system.vmat_direct( qx, qy, self.system.U, self.system.V, self.system.Vnn)
             Vmat = np.vectorize(f)
-            denom = 1 - np.multiply(chi0, Vmat(X,Y))
+            denom = self.get_rpa_denominator(chi0, Vmat(X,Y))
             Z = np.divide(chi0, denom)
             self.rpa = (Z, X, Y)
 
@@ -522,6 +529,32 @@ class ChiCharge(Chi):
     def __init__(self,system):
         # rename original Chi as ChiCharge for completeness
         super().__init__(system)
+
+
+class ChiSpin(Chi):
+    """
+    Spin Susceptibility
+    """
+    def __init__(self,system):
+        # rename original Chi as ChiCharge for completeness
+        super().__init__(system)
+
+    @staticmethod
+    def get_rpa_denominator(chi0, Vmat):
+        # sign is '-' for sping susceptibility
+        # hence local interaction can enhance the bare response.
+        return 1 - np.multiply(chi0, Vmat)
+
+    def gbasis_effective_interaction(self,q):
+        qx,qy = q
+        # only exchange interaction contributes to spin susceptbility
+        # vsigma_gbasis = V_xc_gbasis
+        Vsigma = self.system.vmat_exchange_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn)
+        qtuple = (q,)
+        chi_tilde = self.gbasis_bare(qtuple).reshape(5,5)
+        denom = np.diag(np.ones(5)) - Vsigma @ chi_tilde
+        denom_inv = np.linalg.inv(denom)
+        return denom_inv @ Vsigma
 
 
 class ChiCurrent(Chi):

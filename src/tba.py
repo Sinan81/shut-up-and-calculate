@@ -58,7 +58,7 @@ class System:
 #        self.eFermi = self.get_Fermi_level1(self.filling)
 #        self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
 #        self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
-#        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+#        self.chis = ChiSpin(self) # static susceptibility chi(omega=0,q)
 #        self.__name__ = model.__name__
 #        self.spectra = Spectra(self)
 
@@ -444,7 +444,7 @@ class CuprateSingleBand(System):
         self.gbasis = [ self.g1, self.g2, self.g3, self.g4 , self.one]
         self.chic = ChiCharge(self) # static susceptibility chi(omega=0,q)
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
-        self.chis = Chi(self) # static susceptibility chi(omega=0,q)
+        self.chis = ChiSpin(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
         self.U = 0.5
         self.V = 0.5
