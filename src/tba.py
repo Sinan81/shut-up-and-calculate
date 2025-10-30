@@ -243,7 +243,7 @@ class System:
         return cx,cy
 
 
-    def plot_bands(self, style='surf', isSaveFig=False, kmin=-pi, kmax=pi):
+    def plot_bands(self, style='surf', isSaveFig=False, kmin=-pi, kmax=pi, isShow=True):
 
         # plot all bands
         X = np.arange(kmin, kmax, 0.1)
@@ -298,7 +298,8 @@ class System:
 
         if isSaveFig:
             plt.savefig(self.__name__ + '_energy_bands.png')
-        plt.show()
+        if isShow:
+            plt.show()
         return fig
 
     def plot_bands_along_sym_cuts(self, withdos=False, withhos=False, isSaveFig=False, plot_Emin=-5, plot_Emax=5, num=50):

@@ -134,3 +134,10 @@ def test_spectra_dos():
        0.09050178])
     aw, ados = x.spectra.get_spectra_vs_omg_via_binning(plot_Emin=-0.1, plot_Emax=4.1, iband=None)
     assert np.allclose(ados,ados_ref)
+
+def test_plot_bands():
+    c1 = CuprateSingleBand()
+    f1 = c1.plot_bands(isShow=False)
+    c3 = CuprateThreeBand()
+    f3 = c3.plot_bands(isShow=False)
+
