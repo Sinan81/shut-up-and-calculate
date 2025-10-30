@@ -131,9 +131,10 @@ x = System()
 x.U=0.5
 x.V=0.5
 x.Vnn=0 # not implemented in gbasis yet, hence set to zero.
-x.chis.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
+x.chic.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
 ```
 
+Note that in the case of spin susceptibility, only exchange terms contribute. Hence $\tilde V_\rho$ is replaced with $\tilde V_\sigma = \tilde V_X$ 
 
 Refs:
 
