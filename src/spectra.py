@@ -117,7 +117,7 @@ class Spectra:
         return (np.array(dos_k_list), np.array(ados_orb_k_list) )
 
 
-    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi, kx=np.pi):
+    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi, kx=np.pi, iorb=None):
         # plot along ky with kx constant
         lky = np.linspace(kmin, kmax, num=200)
         lkx = np.ones(len(lky))*kx
@@ -134,12 +134,29 @@ class Spectra:
         lspectra = lambda omg: self.spectra_w_vs_k(omg)
         lomg = np.linspace(Emin,Emax, num=200)
         spectra_vals = list(map(lspectra, lomg))
-        # extract tdos for now
+
+        # extract total DoS
         spectra_vals_tdos = []
         for row in spectra_vals:
             spectra_vals_tdos.append(row[0])
         # return a 2d numpy array from list of 1d np arrays.
-        data = np.vstack(spectra_vals_tdos)
+        data_tdos = np.vstack(spectra_vals_tdos)
+
+        # orbital resolved DoS
+        if iorb is not None:
+            spectra_vals_orbital_resolved = []
+            for row in spectra_vals:
+                spectra_vals_orbital_resolved.append(row[1].T[iorb])
+            # return a 2d numpy array from list of 1d np arrays.
+            data_orb = np.vstack(spectra_vals_orbital_resolved)
+
+        if iorb is None:
+            # plot total dos
+            data = data_tdos
+        else:
+            # plot orbital resolved dos
+            data = data_orb
+
         im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
         plt.xlabel("ky/pi with kx=pi")
         plt.ylabel("$\omega$")
