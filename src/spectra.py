@@ -117,7 +117,7 @@ class Spectra:
         return (np.array(dos_k_list), np.array(ados_orb_k_list) )
 
 
-    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi, kx=np.pi, iorb=None):
+    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi, kx=np.pi, iorb=None, isSaveFig=False):
         # plot along ky with kx constant
         lky = np.linspace(kmin, kmax, num=200)
         lkx = np.ones(len(lky))*kx
@@ -160,6 +160,9 @@ class Spectra:
         im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
         plt.xlabel("ky/pi with kx=pi")
         plt.ylabel("$\omega$")
+        plt.title("Single-band tetragonal Superconductor with d-wave gap")
+        if isSaveFig:
+            plt.savefig("out.png")
         plt.show()
 
 
