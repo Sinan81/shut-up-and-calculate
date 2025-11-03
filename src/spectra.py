@@ -117,7 +117,8 @@ class Spectra:
         return (np.array(dos_k_list), np.array(ados_orb_k_list) )
 
 
-    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1,kmin=-pi,kmax=pi, kx=np.pi, iorb=None, isSaveFig=False):
+    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
+            isSaveFig=False, isReturnData=False, isPltShow=True):
         # plot along ky with kx constant
         lky = np.linspace(kmin, kmax, num=200)
         lkx = np.ones(len(lky))*kx
@@ -163,8 +164,10 @@ class Spectra:
         plt.title("Single-band tetragonal Superconductor with d-wave gap")
         if isSaveFig:
             plt.savefig("out.png")
-        plt.show()
-
+        if isPltShow:
+            plt.show()
+        if isReturnData:
+            return data
 
     def plot_spectra_at_fermi_surf(self, orb_resolv=False, isSaveFig=False):
 
