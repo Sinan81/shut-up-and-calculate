@@ -71,4 +71,6 @@ Hexa Single Band
   <br>
   <img src='images/hexa/hexa_single_band_fermi_surface.png', width=400>
   <img src="images/tetra/cuprate_single_band_susceptibility.png" width="400" />
+    <br>
+  <img src='images/tetra/sc_dwave_spectra.png', width=400/>
 </p>
