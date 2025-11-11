@@ -403,8 +403,13 @@ class System:
         for ii in range(Nvol):
             vl = Eall[ii, :]
             vc = Evecs[ii,:]
-            # create a 2d array with vl provided columnwise and duplicated
-            vl2d = np.array([vl,vl])
+            # create a 2d matrix with vl provided row-wise and
+            # duplicated for elementwise multiplication
+            dummy_list = []
+            for _ in range(self.rank):
+                dummy_list.append(vl)
+            vl2d = np.array(dummy_list)
+            #pdb.set_trace()
             vc_conj = vc.conj()
             n_k = vc*vc_conj*self.fermiDist(vl2d - E0)
             sw[ii] = n_k
