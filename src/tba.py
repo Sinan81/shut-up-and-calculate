@@ -24,7 +24,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from pathos.multiprocessing import ProcessingPool as PPool
 #import pysnooper
-import pdb
+
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -409,7 +409,6 @@ class System:
             for _ in range(self.rank):
                 dummy_list.append(vl)
             vl2d = np.array(dummy_list)
-            #pdb.set_trace()
             vc_conj = vc.conj()
             n_k = vc*vc_conj*self.fermiDist(vl2d - E0)
             sw[ii] = n_k
@@ -452,9 +451,9 @@ class CuprateSingleBand(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = ChiSpin(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
-        self.U = 0.5
-        self.V = 0.5
-        self.Vnn = 0.5
+        self.U = 0.1
+        self.V = 0.1
+        self.Vnn = 0.1
 
     @staticmethod
     @jit(nopython=True)
@@ -824,6 +823,134 @@ class TetraSingleBandSC(System):
                 [ Dk,   self.mu -Ek]
                 ])
         return m
+
+    def Eband(self, kx,ky,iband=1):
+        """
+        make energy bands
+        """
+        vl,vc = np.linalg.eig(self.Ematrix(kx,ky))
+        vl = np.sort(vl)
+        return vl[iband]
+
+    def get_density(self, E0,Eall,Nvol,Evecs=None):
+        density_by_orb = self.filling_multiband(E0=E0,Eall=Eall,Nvol=Nvol, Evecs=Evecs)
+        # only return particle density (i.e. first orbital) as opposed to contrubitions from hole density
+        return density_by_orb[0]
+
+
+class CuprateSinglBand_He_etal_2011(System):
+    def __init__(self, filling=0.36, kT=0.01, mu=-0.24327, eFermi=None):
+        self.crystal = Tetra()
+        self.rank = 1
+        self.__name__ = 'cuprate_single_band_He_etal_2011'
+        self.kT = kT
+        self.filling = self.set_filling(filling)
+        self.mu = mu if mu is not None else 0
+        self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
+        self.spectra = Spectra(self)
+
+    def Eband(self,kx,ky):
+        """
+        make energy matrix
+        """
+        # Reference:
+        # From a single-band metal to a high-temperature superconductor via
+        # two thermal phase transitions Supporting Material
+        # He etal 2011, https://arxiv.org/abs/1103.2363v1
+        t=0.22
+        t1=-0.034315
+        t2=0.035977
+        t3=-0.0071637
+
+        Ek = (
+            -2*t*(cos(kx) + cos(ky))
+            -4*t1*cos(kx)*cos(ky)
+            -2*t2*(cos(2*kx)+cos(2*ky))
+            -2*t3*(cos(2*kx)*cos(ky) + cos(kx)*cos(2*ky))
+            - self.mu )
+        return Ek
+
+
+class TetraSingleBandDDWSC(System):
+    def __init__(self, filling=0.5, temp=100, D0=0.035, W0=0.011, mu=-0.24327, eFermi=None):
+        # 100 kelvin is 0.008617 eV
+        self.D0 = D0
+        self.W0 = W0
+        #self.isAFRBZ = True
+        self.crystal = Tetra()
+        self.rank = 4
+        self.__name__ = 'tetra_single_band_DDWSC'
+        self.kT = self.kelvin_to_eV(temp)
+        self.filling = self.set_filling(filling)
+        self.mu = mu if mu is not None else 0
+        self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
+        self.spectra = Spectra(self)
+        self.ef_plot_offset=0.
+
+    @staticmethod
+    def kelvin_to_eV(temp):
+        return 8.617333262e-5*temp
+
+    #@staticmethod
+    def Ematrix(self,kx,ky):
+        """
+        make energy matrix
+        """
+        # Reference:
+        # From a single-band metal to a high-temperature superconductor via
+        # two thermal phase transitions Supporting Material
+        # He etal 2011, https://arxiv.org/abs/1103.2363v1
+        #
+        # Spin and Current Correlation Functions in the d-density Wave State of the Cuprates
+        # Tewari et al 2001, https://arxiv.org/abs/cond-mat/0101027
+        t=0.22
+        t1=-0.034315
+        t2=0.035977
+        t3=-0.0071637
+
+        Ek = -2*t*(cos(kx) + cos(ky)) \
+            -4*t1*cos(kx)*cos(ky) \
+            -2*t2*(cos(2*kx)+cos(2*ky)) \
+            -2*t3*(cos(2*kx)*cos(ky) + cos(kx)*cos(2*ky))
+
+        D0=self.D0
+        W0=self.W0
+
+        Dk= D0*0.5*(cos(kx) - cos(ky))
+        Wk= W0*0.5*(cos(kx) - cos(ky))
+
+        # define k+Q
+        kx = kx + pi
+        ky = ky + pi
+
+        EkQ = -2*t*(cos(kx) + cos(ky)) \
+            -4*t1*cos(kx)*cos(ky) \
+            -2*t2*(cos(2*kx)+cos(2*ky)) \
+            -2*t3*(cos(2*kx)*cos(ky) + cos(kx)*cos(2*ky))
+
+
+        # basis: c_k_spin_up^dagger, c_k+Q_spin_up^dagger, c_{-k}_spin_down, c_{-k-Q}_spin_down
+        Mddw_up = np.array([
+                [ Ek - self.mu, ic*Wk ],
+                [ -ic*Wk,       EkQ - self.mu ]
+                ])
+
+        Mddw_down = np.array([
+                [ -(Ek - self.mu), ic*Wk ],
+                [ -ic*Wk,       -(EkQ - self.mu) ]
+                ])
+
+        Msc = np.array([
+                [ Dk, 0],
+                [ 0 , -Dk]
+                ])
+
+        Msys = np.block([
+                [ Mddw_up, Msc],
+                [ Msc, Mddw_down]
+                ])
+
+        return Msys
 
     def Eband(self, kx,ky,iband=1):
         """

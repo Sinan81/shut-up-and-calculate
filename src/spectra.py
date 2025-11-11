@@ -7,6 +7,7 @@ import os
 import pickle
 import warnings
 import matplotlib.pyplot as plt
+import pdb
 
 from ebands import *
 ncpus = len(os.sched_getaffinity(0))
@@ -146,8 +147,15 @@ class Spectra:
         # orbital resolved DoS
         if iorb is not None:
             spectra_vals_orbital_resolved = []
+            # iorb can be just an int if user indicates just one orbital
+            # convert iorb to list before for loop
+            if type(iorb) is int:
+                iorb = [iorb]
             for row in spectra_vals:
-                spectra_vals_orbital_resolved.append(row[1].T[iorb])
+                ssum = np.zeros(row[1].T[0].shape) # initialize
+                for jorb in iorb:
+                    ssum = ssum + row[1].T[jorb]
+                spectra_vals_orbital_resolved.append(ssum)
             # return a 2d numpy array from list of 1d np arrays.
             data_orb = np.vstack(spectra_vals_orbital_resolved)
 
