@@ -218,8 +218,8 @@ class System:
 
         ax.set_aspect("equal")
 
-        plt.xlabel("kx/$\pi$")
-        plt.ylabel("ky/$\pi$")
+        plt.xlabel(r"kx/$\pi$")
+        plt.ylabel(r"ky/$\pi$")
         plt.title("Fermi surface")
 
         #    ax.zaxis.set_major_locator(LinearLocator(10))
@@ -292,8 +292,8 @@ class System:
         lt = [-1, -0.5, 0, 0.5, 1]
         ax.set_xticks(lt)
         ax.set_yticks(lt)
-        plt.xlabel("$kx/\pi$")
-        plt.ylabel("$ky/\pi$")
+        plt.xlabel(r"$kx/\pi$")
+        plt.ylabel(r"$ky/\pi$")
         plt.title("Energy bands")
 
         if isSaveFig:
@@ -354,10 +354,10 @@ class System:
         else:
             xg=0.12 ; xx=0.38 ; xm=0.63 ; xgg=0.89
         # indicate symmetry point labels
-        fig.text(xg, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
+        fig.text(xg, 0.075, r'$\mathbf{\Gamma}$', fontweight='bold')
         fig.text(xx, 0.075, 'X', fontweight='bold')
         fig.text(xm, 0.075, 'M', fontweight='bold')
-        fig.text(xgg, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
+        fig.text(xgg, 0.075, r'$\mathbf{\Gamma}$', fontweight='bold')
         # get rid of space between subplots
         plt.subplots_adjust(wspace=0)
         # set figure title
