@@ -18,9 +18,9 @@ class Spectra:
     """
     Spectra stuff
     """
-    def __init__(self, system):
+    def __init__(self, system, gamma=None):
         self.system = system # a TBA system as defined in tba.py
-        self.gamma = 0.02
+        self.gamma = gamma if gamma else 0.02
         self.Eall, self.Evecs = self.get_Eigs()
         self.Emin = self.get_Eigs()[0].min() -0.1 # fudge factor
         self.Emax = self.get_Eigs()[0].max() + 0.1
@@ -119,10 +119,10 @@ class Spectra:
 
 
     def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
-            isSaveFig=False, isReturnData=False, isPltShow=True):
+            isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
         # plot along ky with kx constant
         lky = np.linspace(kmin, kmax, num=200)
-        lkx = np.ones(len(lky))*kx
+        lkx = np.ones(len(lky))*(kx-dkx)
 
         if self.system.rank == 1:
             Eall = self.system.make_Eall1(lkx,lky)
@@ -166,10 +166,11 @@ class Spectra:
             # plot orbital resolved dos
             data = data_orb
 
-        im = plt.imshow(data, cmap='viridis',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
+        im = plt.imshow(data, cmap='jet',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
         plt.xlabel("ky/pi with kx=pi")
         plt.ylabel("$\omega$")
-        plt.title("Single-band tetragonal Superconductor with d-wave gap")
+        plt.title(self.system.__name__)
+        plt.colorbar()
         if isSaveFig:
             plt.savefig("out.png")
         if isPltShow:
