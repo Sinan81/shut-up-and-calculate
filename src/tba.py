@@ -889,7 +889,7 @@ class TetraSingleBandDDWSC(System):
         self.filling = self.set_filling(filling)
         self.mu = mu if mu is not None else 0
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
-        self.spectra = Spectra(self)
+        self.spectra = Spectra(self, gamma=0.003)
         self.ef_plot_offset=0.
 
     @staticmethod

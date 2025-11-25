@@ -118,6 +118,50 @@ class Spectra:
         return (np.array(dos_k_list), np.array(ados_orb_k_list) )
 
 
+    def spectral_weight_v2(self, omg, kx, ky, iorb=None):
+        # Green function
+        Gmat = np.linalg.inv( (omg + 1j*self.gamma)*np.eye(self.system.rank) -self.system.Ematrix(kx,ky) )
+        if iorb is None:
+            # return total spectra
+            # trace is simply a sum of the diagonals
+            return -np.imag(np.trace(Gmat))/np.pi
+        if iorb is int:
+            return -np.imag(np.diagonal(Gmat)[iorb])/np.pi
+        # else iorb is iterable
+        ssum = 0
+        for ii in iorb:
+            ssum += -np.imag(np.diagonal(Gmat)[iorb])/np.pi
+        return ssum
+
+    def plot_spectra_along_kx_cut_v2(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
+            isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
+        # plot along ky with kx constant
+        lky = np.linspace(kmin, kmax, num=200)
+        lkx = np.ones(len(lky))*(kx-dkx)
+        lomg = np.linspace(Emin,Emax, num=200)
+
+        data = np.zeros((len(lkx), len(lomg)))
+
+        kind = 0 #k index
+        for ky in lky:
+            data[kind,:] = [ self.spectral_weight_v2(omg, kx-dkx, ky, iorb) for omg in lomg ]
+            kind += 1
+
+        im = plt.imshow(data.T, cmap='jet',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
+        plt.xlabel("ky/pi with kx=pi")
+        plt.ylabel("$\omega$")
+        plt.title(self.system.__name__)
+        plt.colorbar()
+        if isSaveFig:
+            plt.savefig("out.png")
+        if isPltShow:
+            plt.show()
+        if isReturnData:
+            return data
+
+
+
+
     def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
             isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
         # plot along ky with kx constant
