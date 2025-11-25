@@ -121,12 +121,15 @@ class Spectra:
     def spectral_weight_v2(self, omg, kx, ky, iorb=None):
         # Green function
         Gmat = np.linalg.inv( (omg + 1j*self.gamma)*np.eye(self.system.rank) -self.system.Ematrix(kx,ky) )
+        if iorb is None and self.system.particle_sector is not None:
+            iorb = self.system.particle_sector
         if iorb is None:
             # return total spectra
             # trace is simply a sum of the diagonals
             return -np.imag(np.trace(Gmat))/np.pi
-        if iorb is int:
+        if type(iorb) is int:
             return -np.imag(np.diagonal(Gmat)[iorb])/np.pi
+
         # else iorb is iterable
         ssum = 0
         for ii in iorb:

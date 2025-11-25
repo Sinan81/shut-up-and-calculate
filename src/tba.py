@@ -806,6 +806,7 @@ class TetraSingleBandSC(System):
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self)
         self.ef_plot_offset=0.
+        self.particle_sector = 0
 
     #@staticmethod
     def Ematrix(self,kx,ky):
@@ -891,6 +892,9 @@ class TetraSingleBandDDWSC(System):
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self, gamma=0.003)
         self.ef_plot_offset=0.
+        # instead of working in RBZ,
+        # artificially limit particle sector to the 1st orbital in full zone.
+        self.particle_sector = 0
 
     @staticmethod
     def kelvin_to_eV(temp):
@@ -986,6 +990,7 @@ class TetraSingleBandDDWSC_rbz(System):
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self, gamma=0.003)
         self.ef_plot_offset=0.
+        self.particle_sector={0,1}
 
     @staticmethod
     def kelvin_to_eV(temp):
