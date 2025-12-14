@@ -121,7 +121,7 @@ class Spectra:
     def spectral_weight_v2(self, omg, kx, ky, iorb=None):
         # Green function
         Gmat = np.linalg.inv( (omg + 1j*self.gamma)*np.eye(self.system.rank) -self.system.Ematrix(kx,ky) )
-        if iorb is None and self.system.particle_sector is not None:
+        if iorb is None and hasattr(self, 'system.particle_sector'): #is not None:
             iorb = self.system.particle_sector
         if iorb is None:
             # return total spectra
@@ -135,6 +135,7 @@ class Spectra:
         for ii in iorb:
             ssum += -np.imag(np.diagonal(Gmat)[iorb])/np.pi
         return ssum
+
 
     def plot_spectra_along_kx_cut_v2(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
             isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
@@ -163,92 +164,46 @@ class Spectra:
             return data
 
 
+    def plot_spectra_at_fermi_level(self, kmin=-pi, kmax=pi, iorb=None,
+            isSaveFig=False, isReturnData=False, isPltShow=True, plot_all=True):
 
-
-    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
-            isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
-        # plot along ky with kx constant
+        # TODO replace with get_grid
         lky = np.linspace(kmin, kmax, num=200)
-        lkx = np.ones(len(lky))*(kx-dkx)
+        lkx = np.linspace(kmin, kmax, num=200)
+        X,Y = np.meshgrid(lkx,lky)
 
-        if self.system.rank == 1:
-            Eall = self.system.make_Eall1(lkx,lky)
-            Evecs = None
-        else: # multi band
-            Eall = make_Eall(lkx,lky,self.system.Ematrix)
-            Eall.flatten()
-            Evecs = get_Evecs(lkx,lky,self.system.Ematrix)
-        self.Eall = Eall -self.system.eFermi
-        self.Evecs = Evecs
-        lspectra = lambda omg: self.spectra_w_vs_k(omg)
-        lomg = np.linspace(Emin,Emax, num=200)
-        spectra_vals = list(map(lspectra, lomg))
+        self.gamma = 0.05
 
-        # extract total DoS
-        spectra_vals_tdos = []
-        for row in spectra_vals:
-            spectra_vals_tdos.append(row[0])
-        # return a 2d numpy array from list of 1d np arrays.
-        data_tdos = np.vstack(spectra_vals_tdos)
-
-        # orbital resolved DoS
-        if iorb is not None:
-            spectra_vals_orbital_resolved = []
-            # iorb can be just an int if user indicates just one orbital
-            # convert iorb to list before for loop
-            if type(iorb) is int:
-                iorb = [iorb]
-            for row in spectra_vals:
-                ssum = np.zeros(row[1].T[0].shape) # initialize
-                for jorb in iorb:
-                    ssum = ssum + row[1].T[jorb]
-                spectra_vals_orbital_resolved.append(ssum)
-            # return a 2d numpy array from list of 1d np arrays.
-            data_orb = np.vstack(spectra_vals_orbital_resolved)
-
-        if iorb is None:
-            # plot total dos
-            data = data_tdos
+        if not plot_all or iorb is not None: # plot tdos or a specific orbital
+            f = lambda kx, ky: self.spectral_weight_v2(omg=self.system.eFermi, kx=kx, ky=ky, iorb=iorb)
+            Z = np.vectorize(f)(X,Y)
+            im = plt.imshow(Z, cmap='jet',extent=[lkx[0]/pi,lkx[-1]/pi,lky[0],lky[-1]], aspect='auto', origin="lower")
+            plt.xlabel("kx/pi")
+            plt.ylabel("ky/pi")
+            plt.title(self.system.__name__)
+            plt.colorbar()
         else:
-            # plot orbital resolved dos
-            data = data_orb
+            norbitals = self.system.rank
+            fsize=6
+            fig, axes = plt.subplots(1, norbitals, figsize=(fsize, int(fsize/norbitals)))
+            for oind in range(norbitals):
+                f = lambda kx, ky: self.spectral_weight_v2(omg=self.system.eFermi, kx=kx, ky=ky, iorb=oind)
+                Z = np.vectorize(f)(X,Y)
+                im = axes[oind].imshow(Z, cmap='jet', aspect='equal')
+                olabel = self.system.orbital_labels[oind]
+                axes[oind].set_title(olabel, fontsize=14, fontweight='bold')
+                axes[oind].set_xticks([])
+                axes[oind].set_yticks([])
+                axes[oind].set_xlabel("$kx/\pi$")
+            axes[0].set_ylabel("$ky/\pi$")
+            plt.tight_layout()
 
-        im = plt.imshow(data, cmap='jet',extent=[lky[0]/pi,lky[-1]/pi,lomg[0],lomg[-1]], aspect='auto', origin="lower")
-        plt.xlabel("ky/pi with kx=pi")
-        plt.ylabel("$\omega$")
-        plt.title(self.system.__name__)
-        plt.colorbar()
         if isSaveFig:
             plt.savefig("out.png")
         if isPltShow:
             plt.show()
         if isReturnData:
-            return data
-
-    def plot_spectra_at_fermi_surf(self, orb_resolv=False, isSaveFig=False):
-
-        self.Eall, self.Evecs = self.get_Eigs(Nk=200)
-        self.gamma = 0.05
-        # total and oribital resolved spectra at fermi surf
-        tdos, odos = self.spectra_w_vs_k(omg=self.system.eFermi)
-        Nkx = int(np.sqrt(len(tdos)))
-        #mtdos = tdos.reshape(Nkx,Nkx)
-        #plt.imshow(mtdos)
-        #plt.show()
-        norbitals = odos.shape[1]
-        fsize=6
-        fig, axes = plt.subplots(1, norbitals, figsize=(fsize, int(fsize/norbitals)))
-        for oind in range(norbitals):
-            data = odos.T[oind].reshape(Nkx,Nkx)
-            im = axes[oind].imshow(data, cmap='viridis', aspect='equal')
-            olabel = self.system.orbital_labels[oind]
-            axes[oind].set_title(olabel, fontsize=14, fontweight='bold')
-            axes[oind].set_xticks([])
-            axes[oind].set_yticks([])
-        plt.tight_layout()
-        if isSaveFig:
-            plt.savefig('spectra_at_fermi_surface.png')
-        plt.show()
+            return Z
 
 
     def get_spectra_vs_omg(self, plot_Emin, plot_Emax):
