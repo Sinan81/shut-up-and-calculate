@@ -117,7 +117,7 @@ Sometimes it's also useful to look at k-resolved spectra at Fermi surface for ea
 ```python
 from tba import *
 x = CuprateThreeBand()
-x.spectra.plot_spectra_at_fermi_surf()
+x.spectra.plot_spectra_at_fermi_level()
 ```
 ![](/images/tetra/cuprate_three_band_spectra_at_fermi_surf_orbital_resolved.png)
 
