@@ -37,7 +37,7 @@ Accordingly, the Fermi surface is modified by DDW in a way similar to the pseudo
 ![](/images/tetra/tetra_single_band_ddw_fermi_surface.png)
 
 # References
-- Hidden Order in Cuprates, Chakravarty et al 2000, [https://arxiv.org/abs/cond-mat/0005443]
-- [https://www.arxiv.org/pdf/0711.2329v2]
-- [https://arxiv.org/abs/cond-mat/0101027]
+- [Hidden Order in Cuprates, Chakravarty et al 2000](https://arxiv.org/abs/cond-mat/0005443)
+- [Time-reversal symmetry breaking by a (d+id) density-wave state in underdoped cuprate superconductors, Tewari et al 2007](https://www.arxiv.org/abs/0711.2329)
+- [Spin and Current Correlation Functions in the \bf d-density Wave State of the Cuprates, Tewari et al 2001](https://arxiv.org/abs/cond-mat/0101027)
 
