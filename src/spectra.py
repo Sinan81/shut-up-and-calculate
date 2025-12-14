@@ -137,7 +137,7 @@ class Spectra:
         return ssum
 
 
-    def plot_spectra_along_kx_cut_v2(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
+    def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
             isSaveFig=False, isReturnData=False, isPltShow=True, dkx=0):
         # plot along ky with kx constant
         lky = np.linspace(kmin, kmax, num=200)
