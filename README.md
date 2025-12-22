@@ -43,17 +43,13 @@ The following references are recommended for topics discussed in this repository
 
 [Generalized RPA (gRPA)](docs/rpa.md#generalized-rpa-grpa-with-exchange-terms)
 
-Cuprate Single Band
-
-Cuprate Three Band
-
-Cuprate Four Band LCO
-
-[D-density-wave (DDW)](docs/ddw.md)
-
-[Tetra Single Band Superconductor](docs/superconductivity.md)
-
-Hexa Single Band
+Models:
+- Cuprate Single Band
+- Cuprate Three Band
+- Cuprate Four Band LCO
+- [D-density-wave (DDW)](docs/ddw.md)
+- [Tetra Single Band Superconductor](docs/superconductivity.md)
+- Hexa Single Band
 
 # To-Do
 - Multiband susceptibility
