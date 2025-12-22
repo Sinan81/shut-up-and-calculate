@@ -121,7 +121,7 @@ class Spectra:
     def spectral_weight_v2(self, omg, kx, ky, iorb=None):
         # Green function
         Gmat = np.linalg.inv( (omg + 1j*self.gamma)*np.eye(self.system.rank) -self.system.Ematrix(kx,ky) )
-        if iorb is None and hasattr(self, 'system.particle_sector'): #is not None:
+        if iorb is None and hasattr(self.system, 'particle_sector'): #is not None:
             iorb = self.system.particle_sector
         if iorb is None:
             # return total spectra

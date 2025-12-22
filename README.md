@@ -48,7 +48,8 @@ Models:
 - Cuprate Three Band
 - Cuprate Four Band LCO
 - [D-density-wave (DDW)](docs/ddw.md)
-- [Tetra Single Band Superconductor](docs/superconductivity.md)
+- [Tetra Single Band Superconductor (SC)](docs/superconductivity.md)
+- Tetra Single Band DDW + SC
 - Hexa Single Band
 
 # To-Do
