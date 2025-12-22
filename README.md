@@ -59,7 +59,7 @@ Models:
 - speed up integration via [low-level callback functions](https://docs.scipy.org/doc/scipy/tutorial/integrate.html#faster-integration-using-low-level-callback-functions)
 
 # Contributing
-Contributions are welcome, small or big. Create an issue to inquire or else for this repo, and afterwards create a pull request.
+Contributions are welcome, small or big. Create an issue to inquire or else fork this repo, and afterwards create a pull request.
 
 
 # Example Visuals
