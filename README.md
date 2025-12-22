@@ -53,11 +53,13 @@ Models:
 - Hexa Single Band
 
 # To-Do
-- Multiband susceptibility
 - Adaptive susceptibility plots using python adaptive or scikit-optimize
-- Mean field and broken symmetry calculations, and coexisting orders
-- improve pytests, documentation etc
+- improve pytests, increase coverage
+- Documentation: migrate to Sphix Docs or github wiki
 - speed up integration via [low-level callback functions](https://docs.scipy.org/doc/scipy/tutorial/integrate.html#faster-integration-using-low-level-callback-functions)
+
+# Contributing
+Contributions are welcome, small or big. Create an issue to inquire or else for this repo, and afterwards create a pull request.
 
 
 # Example Visuals
