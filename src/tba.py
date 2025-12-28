@@ -167,7 +167,6 @@ class System:
         while not check_dn_ok:
             density = self.get_density(Emid,Eall,Nvol,Evecs)
             dn = abs(target_filling - density)
-            print("###", dn, Emid)
             dn_list.append(dn)
             if density > target_filling: #Emid is big
                 Emax = Emid
