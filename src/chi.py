@@ -51,6 +51,8 @@ class Chi:
         self.rpa = None # direct interaction only
         self.grpa = None # with exchange
         self.cuts = None
+        self.cuts_rpa = None
+        self.cuts_grpa = None
         self.system = system
 
 
@@ -231,29 +233,68 @@ class Chi:
         return self.real_static(q) + Amat.T @ Gmat @ Amat
 
 
-    def _calc_cuts(self,ncuts,num):
+    def _calc_cuts(self, ncuts, num):
+        if self.system.rank != 1: # single band
+            print('multi band chi not implemented yet. Exiting...')
+            return
+
         if not self.cuts:
             Zcuts = []
+            xy_cuts = []
             # make points along the cuts
             for i in range(0, ncuts):
                 p1,p2 = self.system.crystal.sym_cuts[i]
                 lkx = np.linspace(p1[0], p2[0], num=num)
                 lky = np.linspace(p1[1], p2[1], num=num)
-                if self.system.rank == 1: # single band
-                    # now zip X,Y so that we can use pool
-                    _xy = list(zip(lkx, lky))
-                    # multiprocess pools doesn't work with class methods
-                    # hence use PPool from pathos module
-                    tic = time.perf_counter()
-                    with PPool(npool) as p:
-                        Z = p.map(self.real_static, _xy)
-                    Zcuts.append(Z)
-                    toc = time.perf_counter()
-                    print(f"run time: {toc - tic:.1f} seconds")
-                else: # multi band
-                    print('multi band chi not implemented yet')
+                _xy = list(zip(lkx, lky))
+                xy_cuts.append(_xy)
+                # now zip X,Y so that we can use pool
+                # multiprocess pools doesn't work with class methods
+                # hence use PPool from pathos module
+                tic = time.perf_counter()
+                with PPool(npool) as p:
+                    Z = p.map(self.real_static, _xy)
+                Zcuts.append(Z)
+                toc = time.perf_counter()
+                print(f"run time: {toc - tic:.1f} seconds")
             self.cuts = Zcuts
+            self.cuts_xy = xy_cuts
 
+    def _calc_cuts_rpa(self, ncuts, num):
+        # make sure to calculate bare sus first
+        if self.cuts is None:
+             self._calc_cuts(ncuts, num)
+
+        Zcuts = []
+        for i in range(0,ncuts):
+            _xy = self.cuts_xy[i]
+            lkx,lky = zip(*_xy)
+            chi0 = self.cuts[i]
+            z,_,_ = self.get_rpa(chi0, lkx, lky)
+            Zcuts.append(z)
+        self.cuts_rpa = Zcuts
+
+
+    def _calc_cuts_grpa(self, ncuts, num):
+        # make sure to calculate bare sus first
+        if self.cuts is None:
+             self._calc_cuts(ncuts, num)
+
+        if self.cuts_grpa is not None:
+            print("self.cuts_grpa already exists. skipping calculation")
+            return
+
+        Zcuts = []
+        for i in range(0,ncuts):
+            _xy = self.cuts_xy[i]
+
+            tic = time.perf_counter()
+            with PPool(npool) as p:
+                chi = p.map(self.gbasis_chi, _xy)
+            toc = time.perf_counter()
+            print(f"run time: {toc - tic:.1f} seconds")
+            Zcuts.append(chi)
+        self.cuts_grpa = Zcuts
 
     def _plot_individual_cuts(self,ncuts,num,axlist):
         # plot
@@ -264,7 +305,7 @@ class Chi:
             else: # multi band
                 print('multi band chi not implemented yet')
 
-            ax.set_ylim(0,1)
+            ax.set_ylim(0,3)
             ax.set_xlim(0,num-1)
             ax.set_xticks([(num-1)/2],[])
             # turn off yaxis ticks except for the first plot
@@ -274,7 +315,48 @@ class Chi:
                 ax.set_ylabel('Intensity (unitless)')
 
 
-    def plot_along_sym_cuts(self, num=3, isSaveFig=False):
+    def _plot_individual_cuts_rpa(self,ncuts,num,axlist):
+        if self.system.rank != 1: # multiband
+            print('multi band chi not implemented yet')
+            return
+
+        for i in range(0, ncuts):
+            ax = axlist[i]
+            ax.plot(self.cuts_rpa[i], marker='x', label="RPA")
+            ax.set_ylim(0,3)
+            ax.set_xlim(0,num-1)
+            ax.set_xticks([(num-1)/2],[])
+            # turn off yaxis ticks except for the first plot
+            if i != 0:
+                ax.set_yticks([],[])
+            if i == 0:
+                ax.set_ylabel('Intensity (unitless)')
+            if i == ncuts -1:
+                ax.legend()
+
+    def _plot_individual_cuts_grpa(self,ncuts,num,axlist):
+        if self.system.rank != 1: # multiband
+            print('multi band chi not implemented yet')
+            return
+
+        for i in range(0, ncuts):
+            ax = axlist[i]
+            ax.plot(self.cuts_grpa[i], marker='s', label="GRPA")
+            ax.set_ylim(0,3)
+            ax.set_xlim(0,num-1)
+            ax.set_xticks([(num-1)/2],[])
+            # turn off yaxis ticks except for the first plot
+            if i != 0:
+                ax.set_yticks([],[])
+            if i == 0:
+                ax.set_ylabel('Intensity (unitless)')
+            if i == ncuts -1:
+                ax.legend()
+
+
+
+
+    def plot_along_sym_cuts(self, num=3, isSaveFig=False, bare=True, rpa=False, grpa=False):
         """
         num: number of points per cut (default 3)
         """
@@ -283,8 +365,17 @@ class Chi:
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
         axlist = [ax1, ax2, ax3]
 
-        self._calc_cuts(ncuts,num)
-        self._plot_individual_cuts(ncuts,num,axlist)
+        if bare:
+            self._calc_cuts(ncuts,num)
+            self._plot_individual_cuts(ncuts,num,axlist)
+
+        if rpa:
+            self._calc_cuts_rpa(ncuts,num)
+            self._plot_individual_cuts_rpa(ncuts,num,axlist)
+
+        if grpa:
+            self._calc_cuts_grpa(ncuts,num)
+            self._plot_individual_cuts_grpa(ncuts,num,axlist)
 
         # indicate symmetry point labels
         fig.text(0.12, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
@@ -432,6 +523,16 @@ class Chi:
         return 1 + np.multiply(chi0, Vmat)
 
 
+    def get_rpa(self, chi0, X, Y):
+        # X, Y are either mesh or a 1d list of qx and qy values
+        def f(qx,qy):
+            return self.system.vmat_direct( qx, qy, self.system.U, self.system.V, self.system.Vnn)
+        Vmat = np.vectorize(f)
+        denom = self.get_rpa_denominator(chi0, Vmat(X,Y))
+        Z = np.divide(chi0, denom)
+        return (Z, X, Y)
+
+
     def calc_rpa_vs_q(self, Nq=3, show=False, recalc=False, shiftPlot=pi,
             omega=None, plot_zone='full',rpa_type='direct_only'):
         """ calculate susceptibility.
@@ -450,12 +551,7 @@ class Chi:
 
         if rpa_type == 'direct_only':
             chi0, X, Y = self.bare
-            def f(qx,qy):
-                return self.system.vmat_direct( qx, qy, self.system.U, self.system.V, self.system.Vnn)
-            Vmat = np.vectorize(f)
-            denom = self.get_rpa_denominator(chi0, Vmat(X,Y))
-            Z = np.divide(chi0, denom)
-            self.rpa = (Z, X, Y)
+            self.rpa = self.get_rpa(chi0,X,Y)
 
         if rpa_type == 'grpa':
             tic = time.perf_counter()
