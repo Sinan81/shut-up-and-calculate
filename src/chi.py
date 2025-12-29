@@ -305,7 +305,6 @@ class Chi:
             else: # multi band
                 print('multi band chi not implemented yet')
 
-            ax.set_ylim(0,3)
             ax.set_xlim(0,num-1)
             ax.set_xticks([(num-1)/2],[])
             # turn off yaxis ticks except for the first plot
@@ -323,7 +322,6 @@ class Chi:
         for i in range(0, ncuts):
             ax = axlist[i]
             ax.plot(self.cuts_rpa[i], marker='x', label="RPA")
-            ax.set_ylim(0,3)
             ax.set_xlim(0,num-1)
             ax.set_xticks([(num-1)/2],[])
             # turn off yaxis ticks except for the first plot
@@ -342,7 +340,6 @@ class Chi:
         for i in range(0, ncuts):
             ax = axlist[i]
             ax.plot(self.cuts_grpa[i], marker='s', label="GRPA")
-            ax.set_ylim(0,3)
             ax.set_xlim(0,num-1)
             ax.set_xticks([(num-1)/2],[])
             # turn off yaxis ticks except for the first plot
@@ -365,17 +362,26 @@ class Chi:
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
         axlist = [ax1, ax2, ax3]
 
+        ymax_bare = 0
+        ymax_rpa  = 0
+        ymax_grpa = 0
         if bare:
             self._calc_cuts(ncuts,num)
             self._plot_individual_cuts(ncuts,num,axlist)
+            ymax_bare = np.max(self.cuts)
 
         if rpa:
             self._calc_cuts_rpa(ncuts,num)
             self._plot_individual_cuts_rpa(ncuts,num,axlist)
+            ymax_rpa = np.max(self.cuts_rpa)
 
         if grpa:
             self._calc_cuts_grpa(ncuts,num)
             self._plot_individual_cuts_grpa(ncuts,num,axlist)
+            ymax_grpa = np.max(self.cuts_grpa)
+        ymax = np.max([ymax_bare, ymax_rpa, ymax_grpa])
+        for ax in axlist:
+            ax.set_ylim(0,ymax+0.01) # add a fudge factor
 
         # indicate symmetry point labels
         fig.text(0.12, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
