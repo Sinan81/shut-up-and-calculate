@@ -296,67 +296,15 @@ class Chi:
             Zcuts.append(chi)
         self.cuts_grpa = Zcuts
 
-    def _plot_individual_cuts(self,ncuts,num,axlist):
-        # plot
-        for i in range(0, ncuts):
-            ax = axlist[i]
-            if self.system.rank == 1: # single band
-                ax.plot(self.cuts[i], marker='o')
-            else: # multi band
-                print('multi band chi not implemented yet')
 
-            ax.set_xlim(0,num-1)
-            ax.set_xticks([(num-1)/2],[])
-            # turn off yaxis ticks except for the first plot
-            if i != 0:
-                ax.set_yticks([],[])
-            if i == 0:
-                ax.set_ylabel('Intensity (unitless)')
-
-
-    def _plot_individual_cuts_rpa(self,ncuts,num,axlist):
-        if self.system.rank != 1: # multiband
-            print('multi band chi not implemented yet')
-            return
-
-        for i in range(0, ncuts):
-            ax = axlist[i]
-            ax.plot(self.cuts_rpa[i], marker='x', label="RPA")
-            ax.set_xlim(0,num-1)
-            ax.set_xticks([(num-1)/2],[])
-            # turn off yaxis ticks except for the first plot
-            if i != 0:
-                ax.set_yticks([],[])
-            if i == 0:
-                ax.set_ylabel('Intensity (unitless)')
-            if i == ncuts -1:
-                ax.legend()
-
-    def _plot_individual_cuts_grpa(self,ncuts,num,axlist):
-        if self.system.rank != 1: # multiband
-            print('multi band chi not implemented yet')
-            return
-
-        for i in range(0, ncuts):
-            ax = axlist[i]
-            ax.plot(self.cuts_grpa[i], marker='s', label="GRPA")
-            ax.set_xlim(0,num-1)
-            ax.set_xticks([(num-1)/2],[])
-            # turn off yaxis ticks except for the first plot
-            if i != 0:
-                ax.set_yticks([],[])
-            if i == 0:
-                ax.set_ylabel('Intensity (unitless)')
-            if i == ncuts -1:
-                ax.legend()
-
-
-
-
-    def plot_along_sym_cuts(self, num=3, isSaveFig=False, bare=True, rpa=False, grpa=False):
+    def plot_along_sym_cuts(self, num=3, isSaveFig=False, bare=True, rpa=False, grpa=False, ymin=0, ymax=None):
         """
         num: number of points per cut (default 3)
         """
+
+        if self.system.rank != 1: # multiband
+            print('multi band chi not implemented yet')
+            return
 
         ncuts = len(self.system.crystal.sym_cuts) # exclude duplicate points
         fig, (ax1, ax2, ax3) = plt.subplots(1,ncuts)
@@ -367,21 +315,44 @@ class Chi:
         ymax_grpa = 0
         if bare:
             self._calc_cuts(ncuts,num)
-            self._plot_individual_cuts(ncuts,num,axlist)
+            for ax in axlist:
+                idx = axlist.index(ax) # get index of item ax
+                ax.plot(self.cuts[idx], marker='o', label='bare')
+            # enable legend in the last subplot only
+            axlist[-1].legend()
             ymax_bare = np.max(self.cuts)
 
         if rpa:
             self._calc_cuts_rpa(ncuts,num)
-            self._plot_individual_cuts_rpa(ncuts,num,axlist)
+            for ax in axlist:
+                idx = axlist.index(ax) # get index of item ax
+                ax.plot(self.cuts_rpa[idx], marker='x', label="RPA")
+            # enable legend in the last subplot only
+            axlist[-1].legend()
             ymax_rpa = np.max(self.cuts_rpa)
 
         if grpa:
             self._calc_cuts_grpa(ncuts,num)
-            self._plot_individual_cuts_grpa(ncuts,num,axlist)
+            for ax in axlist:
+                idx = axlist.index(ax) # get index of item ax
+                ax.plot(self.cuts_grpa[idx], marker='s', label="GRPA")
+            # enable legend in the last subplot only
+            axlist[-1].legend()
             ymax_grpa = np.max(self.cuts_grpa)
-        ymax = np.max([ymax_bare, ymax_rpa, ymax_grpa])
+
+        ymax_overall = np.max([ymax_bare, ymax_rpa, ymax_grpa])+0.01
+
         for ax in axlist:
-            ax.set_ylim(0,ymax+0.01) # add a fudge factor
+            if ymax is None:
+                ymax = ymax_overall
+            ax.set_ylim(ymin,ymax) # add a fudge factor
+            ax.set_xlim(0,num-1)
+            ax.set_xticks([(num-1)/2],[])
+        # set ylabel only for first plot
+        ax1.set_ylabel('Intensity (unitless)')
+        # disable ytics in 2nd to last subplot
+        for ax in axlist[1:]:
+            ax.set_yticks([],[])
 
         # indicate symmetry point labels
         fig.text(0.12, 0.075, '$\mathbf{\Gamma}$', fontweight='bold')
