@@ -431,7 +431,7 @@ class Chi:
     def plot_vs_q(self, style='surf', isSaveFig=False, plot_zone='full', chi_type='bare', Nq=3):
 
         if chi_type == 'bare':
-            ttag='Bare susceptibility'
+            ttag='Bare susceptibility' + " $\chi(q,\omega=0)$"
             if self.bare is not None:
                 Z, X, Y = self.bare
             else:
@@ -439,23 +439,37 @@ class Chi:
                 print('Running self.calc_vs_q()...')
                 Z, X, Y = self.calc_vs_q(plot_zone=plot_zone)
 
-        if chi_type == 'rpa':
-            ttag='RPA susceptibility'
+        if chi_type == 'rpa' or chi_type == 'rpa_diff_bare':
+            ttag='RPA susceptibility' + " $\chi(q,\omega=0)$"
             if self.rpa is None:
                 print('No previous Chi calculation found: self.chi.bare is "None"')
                 print('Running self.calc_vs_q()...')
                 self.calc_rpa_vs_q(rpa_type='direct_only', plot_zone=plot_zone, Nq=Nq)
             Z, X, Y = self.rpa
 
-        if chi_type == 'grpa':
-            ttag='gRPA susceptibility'
+        if chi_type == 'rpa_diff_bare':
+            ttag='$\chi_{RPA}$ - $\chi_{0}$: effect of interactions'
+            Zrpa, X, Y = self.rpa
+            #if self.bare is None:
+            #    self.calc_vs_q(plot_zone=plot_zone)
+            Zbare, _, _ = self.bare
+            Z = Zrpa - Zbare
+
+        if chi_type == 'grpa' or chi_type == 'grpa_diff_bare':
+            ttag='gRPA susceptibility' + " $\chi(q,\omega=0)$"
             if self.grpa is None:
-                print('No previous Chi calculation found: self.chi.bare is "None"')
+                print('No previous Chi calculation found: self.chic.grpa is "None"')
                 print('Running self.calc_vs_q()...')
                 self.calc_rpa_vs_q(rpa_type='grpa', plot_zone=plot_zone, Nq=Nq)
             Z, X, Y = self.grpa
 
-        #matplotlib.use("TkAgg")
+        if chi_type == 'grpa_diff_bare':
+            ttag='$\chi_{gRPA}$ - $\chi_{0}$: effect of interactions'
+            Zgrpa, X, Y = self.grpa
+            if self.bare is None:
+                self.calc_vs_q(plot_zone=plot_zone)
+            Zbare, _, _ = self.bare
+            Z = Zgrpa - Zbare
 
         # normalise axes
         X = X / pi
@@ -484,7 +498,7 @@ class Chi:
 
         plt.xlabel("qx/$\pi$")
         plt.ylabel("qy/$\pi$")
-        plt.title(ttag+" $\chi(q,\omega=0)$")
+        plt.title(ttag)
 
         if isSaveFig:
             plt.savefig(self.system.__name__ + "_susceptibility.png")
