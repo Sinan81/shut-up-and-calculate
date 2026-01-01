@@ -53,6 +53,8 @@ class Chi:
         self.cuts = None
         self.cuts_rpa = None
         self.cuts_grpa = None
+        self.gbasis_bare_partial_mesh = None
+        self.gbasis_bare_mesh = None
         self.system = system
 
 
@@ -170,6 +172,7 @@ class Chi:
         for gfunc_left in self.system.gbasis:
             for gfunc_right in self.system.gbasis:
                 self.extra_sus_factor = (gfunc_left, gfunc_right)
+                #pdb.set_trace()
                 if len(_xy)==1:
                     chi = self.real_static_gbasis(_xy[0])
                 else:
@@ -211,6 +214,7 @@ class Chi:
                - 2*self.system.vmat_direct_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn)
 
         qtuple = (q,)
+        # TODO save chi_tilde to prevent recalc for different values of V matrix
         chi_tilde = self.gbasis_bare(qtuple).reshape(5,5)
         denom = np.diag(np.ones(5)) - vrho @ chi_tilde
         denom_inv = np.linalg.inv(denom)
@@ -231,6 +235,101 @@ class Chi:
         Gmat = self.gbasis_effective_interaction(q)
 
         return self.real_static(q) + Amat.T @ Gmat @ Amat
+
+
+    def get_vrho(self, qx, qy):
+        vrho = self.system.vmat_exchange_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn) \
+               - 2*self.system.vmat_direct_gbasis( qx, qy, self.system.U, self.system.V, self.system.Vnn)
+        return vrho
+
+
+    def gbasis_chi_mesh(self,X,Y):
+        """Calculate Chi within generalized RPA with infinite sum of
+        ladder, bubble, and mixed diagrams with non-local interaction.
+        Ref: Collective excitations in the normal state of Cu-O-based superconductors,
+        Littlewood etal, 1989
+        https://journals.aps.org/prb/abstract/10.1103/PhysRevB.39.12371
+        """
+        #qx,qy = q
+        #qtuple = (q,)
+        x = X.reshape(X.size)
+        y = Y.reshape(Y.size)
+        _xy = list(zip(x, y))
+
+        # This calculation is costly. Hence, check if it already exists
+        if self.gbasis_bare_partial_mesh is None:
+            # Amat shape is 5 x Nk
+            # Do Amat.T to access by k like
+            # Amat.T[0] 5x1 Amat corresponding to 1st k.
+            Z = self.gbasis_bare_partial(_xy)
+            Amat_mesh = Z.T.reshape(X.shape[0],X.shape[1],5)
+            self.gbasis_bare_partial_mesh = (Amat_mesh, X, Y)
+        #Gmat = self.gbasis_effective_interaction(q)
+        #pdb.set_trace()
+
+        # This calculation is costly. Hence, check if it already exists
+        if self.gbasis_bare_mesh is None:
+            # output shape: Nbasis**2 x Nk**2. hence, re-arrange
+            Z = self.gbasis_bare(_xy)
+            chi_tilde_mesh = Z.T.reshape(X.shape[0],X.shape[1],5,5)
+            self.gbasis_bare_mesh = (chi_tilde_mesh, X, Y)
+
+        # we could use np.einsum here but
+        # for loop is more clear and performance is not an issue
+        Nx, Ny = X.shape
+        chi_delta_mesh = np.empty(X.shape)
+        gamma_tilde_mesh = np.empty((Nx,Ny,5,5))
+        gamma_mesh = np.empty(X.shape)
+        chi_mesh = np.empty(X.shape)
+        Amat_mesh, _, _ = self.gbasis_bare_partial_mesh
+        chi_tilde_mesh, _, _ = self.gbasis_bare_mesh
+        if self.bare is None:
+            Z = self.run_npool(X,Y)
+            self.bare = (Z, X, Y)
+        chi0, Xb, Yb = self.bare
+        assert np.allclose(X,Xb)
+        assert np.allclose(Y,Yb)
+
+        for ix in range(Nx):
+            for iy in range(Ny):
+                qx = X[ix][iy]
+                qy = Y[ix][iy]
+                q = (qx,qy)
+                chi_tilde = chi_tilde_mesh[ix][iy]
+                Amat = Amat_mesh[ix][iy]
+                bare = chi0[ix][iy]
+
+                vrho = self.get_vrho(qx,qy)
+
+                denom = np.diag(np.ones(5)) - vrho @ chi_tilde
+                denom_inv = np.linalg.inv(denom)
+
+                Gmat = denom_inv @ vrho # effective interaction in gbasis
+                gamma_tilde_mesh[ix][iy] = Gmat # effective interaction in gbasis
+                # Enhancement due to interactions: chi_delta = Chi_GRPA - Chi0
+                chi_delta = Amat.T @ Gmat @ Amat
+                chi_delta_mesh[ix][iy] = chi_delta
+                chi_mesh[ix][iy] =  bare + chi_delta
+                gamma_mesh[ix][iy] = chi_delta/(bare**2) # effective interaction?
+
+
+        self.grpa_delta = (chi_delta_mesh, X, Y)
+        self.grpa_gamma_mesh = (gamma_mesh, X, Y)
+        self.grpa_gamma_tilde_mesh = (gamma_tilde_mesh, X, Y)
+        self.grpa = (chi_mesh, X, Y)
+        return chi_mesh
+
+
+    def gbasis_chi_vectorized(self,X,Y):
+
+        tic = time.perf_counter()
+        def f(qx,qy):
+            self.gbasis_chi((qx,qy))
+
+        vchi = np.vectorize(f)
+        Z = vchi(X,Y)
+        toc = time.perf_counter()
+        print(f"run time: {toc - tic:.1f} seconds")
 
 
     def _calc_cuts(self, ncuts, num):
@@ -548,16 +647,17 @@ class Chi:
             tic = time.perf_counter()
 
             chi0, X, Y = self.bare
-            # now zip X,Y so that we can use pool
-            x = X.reshape(X.size)
-            y = Y.reshape(Y.size)
-            _xy = list(zip(x, y))
-
-            # in paralel, it takes 1 min per 10 q points
-            # Nq=8 takes about 6 minutes.
-            with PPool(npool) as p:
-                chi = p.map(self.gbasis_chi, _xy)
-            Z = np.reshape(chi, X.shape)
+#            # now zip X,Y so that we can use pool
+#            x = X.reshape(X.size)
+#            y = Y.reshape(Y.size)
+#            _xy = list(zip(x, y))
+#
+#            # in paralel, it takes 1 min per 10 q points
+#            # Nq=8 takes about 6 minutes.
+#            with PPool(npool) as p:
+#                chi = p.map(self.gbasis_chi, _xy)
+#            Z = np.reshape(chi, X.shape)
+            Z = self.gbasis_chi_mesh(X,Y)
             self.grpa = (Z, X, Y)
             toc = time.perf_counter()
             print(f"grpa run time: {toc - tic:.1f} seconds")
