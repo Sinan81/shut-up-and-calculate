@@ -55,6 +55,8 @@ class Chi:
         self.cuts_grpa = None
         self.gbasis_bare_partial_mesh = None
         self.gbasis_bare_mesh = None
+        self.cuts_gbasis_bare_partial = None
+        self.cuts_gbasis_bare = None
         self.system = system
 
 
@@ -320,6 +322,72 @@ class Chi:
         return chi_mesh
 
 
+    def run_gbasis_chi_cuts(self, num=3):
+        lkx = np.linspace(0, pi, num=num)
+        lky = np.linspace(0 ,pi, num=num)
+        lxy = list(zip(lkx,lky))
+        self.gbasis_chi_cuts(lxy)
+
+
+    def gbasis_chi_cuts(self, lxy, icut):
+        """Calculate Chi within generalized RPA with infinite sum of
+        ladder, bubble, and mixed diagrams with non-local interaction.
+        Ref: Collective excitations in the normal state of Cu-O-based superconductors,
+        Littlewood etal, 1989
+        https://journals.aps.org/prb/abstract/10.1103/PhysRevB.39.12371
+        """
+
+        if self.cuts is None:
+             self._calc_cuts(ncuts, num)
+
+        Nq = len(lxy)
+
+        # we could use np.einsum here but
+        # for loop is more clear and performance is not an issue
+        chi_delta_vec = np.empty(Nq)
+        Ngbasis = 5
+        gamma_tilde_vec = np.empty((Nq,Ngbasis,Ngbasis))
+        gamma_vec = np.empty(Nq)
+        chi_vec = np.empty(Nq)
+        Amat_vec, _ = self.cuts_gbasis_bare_partial[icut]
+        chi_tilde_vec, _ = self.cuts_gbasis_bare[icut]
+#        if self.bare is None:
+#            Z = self.run_npool(X,Y)
+#            self.bare = (Z, X, Y)
+#        chi0, Xb, Yb = self.bare
+#        assert np.allclose(X,Xb)
+#        assert np.allclose(Y,Yb)
+        chi0 = self.cuts[icut]
+
+        #pdb.set_trace()
+        for iq in range(Nq):
+            q = lxy[iq]
+            qx,qy = q
+            chi_tilde = chi_tilde_vec[iq]
+            Amat = Amat_vec[iq]
+            bare = chi0[iq]
+
+            vrho = self.get_vrho(qx,qy)
+
+            denom = np.diag(np.ones(Ngbasis)) - vrho @ chi_tilde
+            denom_inv = np.linalg.inv(denom)
+
+            Gmat = denom_inv @ vrho # effective interaction in gbasis
+            gamma_tilde_vec[iq] = Gmat # effective interaction in gbasis
+            # Enhancement due to interactions: chi_delta = Chi_GRPA - Chi0
+            chi_delta = Amat.T @ Gmat @ Amat
+            chi_delta_vec[iq] = chi_delta
+            chi_vec[iq] =  bare + chi_delta
+            gamma_vec[iq] = chi_delta/(bare**2) # effective interaction?
+
+
+        #self.cuts_grpa_delta = (chi_delta_vec, lxy)
+        #self.cuts_grpa_gamma = (gamma_vec, lxy)
+        #self.cuts_grpa_gamma_tilde = (gamma_tilde_vec, lxy)
+        #self.cuts_grpa = (chi_vec, lxy)
+        return chi_vec
+
+
     def gbasis_chi_vectorized(self,X,Y):
 
         tic = time.perf_counter()
@@ -359,6 +427,7 @@ class Chi:
             self.cuts = Zcuts
             self.cuts_xy = xy_cuts
 
+
     def _calc_cuts_rpa(self, ncuts, num):
         # make sure to calculate bare sus first
         if self.cuts is None:
@@ -374,22 +443,53 @@ class Chi:
         self.cuts_rpa = Zcuts
 
 
-    def _calc_cuts_grpa(self, ncuts, num):
+    def _calc_cuts_gbasis_bare(self, num):
+
+        Ngbasis = 5
+        # output shape: Nbasis**2 x Nk**2. hence, re-arrange
+        for icut in range(len(self.system.crystal.sym_cuts)):
+            lxy = self.cuts_xy[icut]
+            Nq=len(lxy)
+            Z = self.gbasis_bare(lxy)
+            l_chi_tilde = Z.T.reshape(Nq,Ngbasis,Ngbasis)
+            self.cuts_gbasis_bare[icut] = (l_chi_tilde, lxy)
+
+
+    def _calc_cuts_gbasis_bare_partial(self, num):
+        Ncuts = len(self.system.crystal.sym_cuts)
+        # Amat shape is 5 x Nk
+        # Do Amat.T to access by k like
+        # Amat.T[0] 5x1 Amat corresponding to 1st k.
+        for icut in range(Ncuts):
+            lxy = self.cuts_xy[icut]
+            Nq = len(lxy)
+            Z = self.gbasis_bare_partial(lxy)
+            Ngbasis = 5
+            l_Amat = Z.T.reshape(Nq,Ngbasis)
+            self.cuts_gbasis_bare_partial[icut] = (l_Amat, lxy)
+
+
+    def _calc_cuts_grpa(self, num):
+        Ncuts = len(self.system.crystal.sym_cuts)
         # make sure to calculate bare sus first
         if self.cuts is None:
-             self._calc_cuts(ncuts, num)
+             self._calc_cuts(Ncuts, num)
 
-        if self.cuts_grpa is not None:
-            print("self.cuts_grpa already exists. skipping calculation")
-            return
+        if self.cuts_gbasis_bare is None:
+            self.cuts_gbasis_bare = [None]*Ncuts
+            self._calc_cuts_gbasis_bare(num)
+
+        #pdb.set_trace()
+        # This calculation is costly. Hence, check if it already exists
+        if self.cuts_gbasis_bare_partial is None:
+            self.cuts_gbasis_bare_partial = [None]*Ncuts
+            self._calc_cuts_gbasis_bare_partial(num)
 
         Zcuts = []
-        for i in range(0,ncuts):
-            _xy = self.cuts_xy[i]
-
+        for icut in range(len(self.system.crystal.sym_cuts)):
+            lxy = self.cuts_xy[icut]
             tic = time.perf_counter()
-            with PPool(npool) as p:
-                chi = p.map(self.gbasis_chi, _xy)
+            chi = self.gbasis_chi_cuts(lxy,icut)
             toc = time.perf_counter()
             print(f"run time: {toc - tic:.1f} seconds")
             Zcuts.append(chi)
@@ -431,7 +531,7 @@ class Chi:
             ymax_rpa = np.max(self.cuts_rpa)
 
         if grpa:
-            self._calc_cuts_grpa(ncuts,num)
+            self._calc_cuts_grpa(num)
             for ax in axlist:
                 idx = axlist.index(ax) # get index of item ax
                 ax.plot(self.cuts_grpa[idx], marker='s', label="GRPA")
