@@ -170,7 +170,9 @@ class Chi:
         To be used in generalized RPA calcs with ladder diagrams
         """
         Z = ()
-        # gbasis is diagonal. Hence a single for loop is sufficient #TODO double check this
+        # TODO: prove that gbasis_bare is a symmetric function
+        # with respect to matrix diagonal.
+        # hence get rid of half of the integrations
         for gfunc_left in self.system.gbasis:
             for gfunc_right in self.system.gbasis:
                 self.extra_sus_factor = (gfunc_left, gfunc_right)
@@ -197,6 +199,8 @@ class Chi:
         where g_i is the ith gbasis function.
         To be used in generalized RPA calcs with ladder diagrams
         """
+        # TODO: extract this from gbasis_bare instead
+        # get rid of unnecessary calculation
         Z = ()
         for gfunc in self.system.gbasis:
             self.extra_sus_factor = (gfunc,)
@@ -562,7 +566,7 @@ class Chi:
         plt.subplots_adjust(wspace=0)
         # set figure title
         ttxt=' '.join(self.system.__name__.split('_'))
-        ttxt='Bare susceptibility of '+ttxt +' (filling='+"{:.2f}".format(self.system.filling)+')'
+        ttxt='Static charge susceptibility of '+ttxt+' model '+' (filling='+"{:.2f}".format(self.system.filling)+')'
         fig.text(0.5,0.9, ttxt, horizontalalignment='center')
         if isSaveFig:
             plt.savefig(self.system.__name__ + '_chi_cuts.png')
