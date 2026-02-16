@@ -61,6 +61,7 @@ class System:
 #        self.chis = ChiSpin(self) # static susceptibility chi(omega=0,q)
 #        self.__name__ = model.__name__
 #        self.spectra = Spectra(self)
+#        self.green = Green(self)
 
     def get_default_eband(self):
         if self.crystal is Tetra:
@@ -453,6 +454,7 @@ class CuprateSingleBand(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = ChiSpin(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.green = Green(self)
         self.U = 0.1
         self.V = 0.1
         self.Vnn = 0.1
@@ -649,6 +651,7 @@ class CuprateThreeBand(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.green = Green(self)
         self.orbital_labels = ['Cu', 'Ox', 'Oy']
 
     @staticmethod
@@ -696,6 +699,7 @@ class CuprateFourBandLCO(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.green = Green(self)
 
     @staticmethod
     def Ematrix(kx,ky):
@@ -758,6 +762,7 @@ class TetraSingleBandDDW(System):
         self.chij = ChiCurrent(self) # static susceptibility chi(omega=0,q)
         self.chis = Chi(self) # static susceptibility chi(omega=0,q)
         self.spectra = Spectra(self)
+        self.green = Green(self)
 
     #@staticmethod
     def Ematrix(self, kx,ky):
@@ -804,6 +809,7 @@ class TetraSingleBandSC(System):
         self.mu = mu
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self)
+        self.green = Green(self)
         self.ef_plot_offset=0.
         self.particle_sector = 0
 
@@ -852,6 +858,7 @@ class CuprateSingleBand_He_etal_2011(System):
         self.mu = mu if mu is not None else 0
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self)
+        self.green = Green(self)
 
     def Eband(self,kx,ky):
         """
@@ -890,6 +897,7 @@ class TetraSingleBandDDWSC(System):
         self.mu = mu if mu is not None else 0
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self, gamma=0.003)
+        self.green = Green(self)
         self.ef_plot_offset=0.
         # instead of working in RBZ,
         # artificially limit particle sector to the 1st orbital in full zone.
@@ -988,6 +996,7 @@ class TetraSingleBandDDWSC_rbz(System):
         self.mu = mu if mu is not None else 0
         self.eFermi = self.get_Fermi_level1(self.filling) if eFermi is None else eFermi
         self.spectra = Spectra(self, gamma=0.003)
+        self.green = Green(self)
         self.ef_plot_offset=0.
         self.particle_sector={0,1}
 
@@ -1079,6 +1088,7 @@ class HexaSingleBand(System):
         self.filling = self.set_filling(filling)
         self.eFermi = self.get_Fermi_level1(self.filling)
         self.spectra = Spectra(self)
+        self.green = Green(self)
 
     @staticmethod
     @jit(nopython=True)

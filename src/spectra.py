@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pdb
 
 from ebands import *
+from green import *
 ncpus = len(os.sched_getaffinity(0))
 npool = ncpus if ncpus else 2
 
@@ -24,6 +25,7 @@ class Spectra:
         self.Eall, self.Evecs = self.get_Eigs()
         self.Emin = self.get_Eigs()[0].min() -0.1 # fudge factor
         self.Emax = self.get_Eigs()[0].max() + 0.1
+        self.green = Green(system, self.gamma)
 
     def get_Eigs(self,Nk=100):
         cell = self.system.crystal
@@ -119,22 +121,7 @@ class Spectra:
 
 
     def spectral_weight_v2(self, omg, kx, ky, iorb=None):
-        # Green function
-        Gmat = np.linalg.inv( (omg + 1j*self.gamma)*np.eye(self.system.rank) -self.system.Ematrix(kx,ky) )
-        if iorb is None and hasattr(self.system, 'particle_sector'): #is not None:
-            iorb = self.system.particle_sector
-        if iorb is None:
-            # return total spectra
-            # trace is simply a sum of the diagonals
-            return -np.imag(np.trace(Gmat))/np.pi
-        if type(iorb) is int:
-            return -np.imag(np.diagonal(Gmat)[iorb])/np.pi
-
-        # else iorb is iterable
-        ssum = 0
-        for ii in iorb:
-            ssum += -np.imag(np.diagonal(Gmat)[iorb])/np.pi
-        return ssum
+        return self.green.spectra(omg, kx, ky, iorb)
 
 
     def plot_spectra_along_kx_cut(self,Emin=-1, Emax=1, kmin=-pi, kmax=pi, kx=np.pi, iorb=None,
