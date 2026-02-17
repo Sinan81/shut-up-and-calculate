@@ -48,7 +48,7 @@ class Green():
         chi_rpa, X, Y = chic.rpa
         Vmat = chic.get_vmat(X,Y)
         # dielectric function
-        epsilon = 1 + chi_rpa*Vmat # elementwise multiplication
+        epsilon = 1 - chi_rpa*Vmat # elementwise multiplication
         # effective interaction
         Wmat = Vmat/epsilon # elementwise division
         iX = kx - X
