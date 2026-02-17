@@ -32,3 +32,31 @@ class Green():
             ssum += -np.imag(np.diagonal(Gmat)[iorb])/np.pi
         return ssum
 
+
+    def self_energy_static(self,kx,ky,Nq=3,interaction_model='direct_only'):
+        """
+        static self energy calculated via
+        RPA charge susceptibility
+        Ref: Interacting Electrons: Theory and Computational approaches,
+        Martin, Reining, Caperley, 2016
+        """
+        chic = self.system.chic
+        # interaction model options:
+        #   'direct_only' -> usual RPA (bubble only diagrams)
+        #   'grpa' -> generalized RPA with ladder and mixed diagrama
+        chic.calc_rpa_vs_q(Nq=Nq,recalc=True,rpa_type=interaction_model)
+        chi_rpa, X, Y = chic.rpa
+        Vmat = chic.get_vmat(X,Y)
+        # dielectric function
+        epsilon = 1 + chi_rpa*Vmat # elementwise multiplication
+        # effective interaction
+        Wmat = Vmat/epsilon # elementwise division
+        iX = kx - X
+        iY = ky - Y
+        Eall = self.system.get_Eall(iX,iY)
+        vfermi = np.vectorize(self.system.fermiDist)
+        occupMat = vfermi(Eall-self.system.eFermi)
+        # discrete integration
+        # note the elementwise multiplication
+        rsum = sum(sum(Wmat*occupMat))/iX.size
+        return -rsum

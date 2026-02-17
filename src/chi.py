@@ -717,6 +717,13 @@ class Chi:
         return 1 + np.multiply(chi0, Vmat)
 
 
+    def get_vmat(self, X, Y):
+        # X, Y are either mesh or a 1d list of qx and qy values
+        def f(qx,qy):
+            return self.system.vmat_direct( qx, qy, self.system.U, self.system.V, self.system.Vnn)
+        Vmat = np.vectorize(f)
+        return Vmat(X, Y)
+
     def get_rpa(self, chi0, X, Y):
         # X, Y are either mesh or a 1d list of qx and qy values
         def f(qx,qy):
