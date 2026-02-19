@@ -33,7 +33,7 @@ class Green():
         return ssum
 
 
-    def self_energy_static(self,kx,ky,Nq=3,interaction_model='direct_only'):
+    def self_energy_static(self,kx,ky,Nq=3,interaction_model='RPA'):
         """
         static self energy calculated via
         RPA charge susceptibility
@@ -41,22 +41,26 @@ class Green():
         Martin, Reining, Caperley, 2016
         """
         chic = self.system.chic
-        # interaction model options:
-        #   'direct_only' -> usual RPA (bubble only diagrams)
-        #   'grpa' -> generalized RPA with ladder and mixed diagrama
-        chic.calc_rpa_vs_q(Nq=Nq,recalc=True,rpa_type=interaction_model)
-        chi_rpa, X, Y = chic.rpa
-        Vmat = chic.get_vmat(X,Y)
-        # dielectric function
-        epsilon = 1 - chi_rpa*Vmat # elementwise multiplication
-        # effective interaction
-        Wmat = Vmat/epsilon # elementwise division
-        iX = kx - X
-        iY = ky - Y
-        Eall = self.system.get_Eall(iX,iY)
-        vfermi = np.vectorize(self.system.fermiDist)
-        occupMat = vfermi(Eall-self.system.eFermi)
-        # discrete integration
-        # note the elementwise multiplication
-        rsum = sum(sum(Wmat*occupMat))/iX.size
-        return -rsum
+        # interaction model options for now:
+        #    RPA -> bubble only diagrams
+        #   'GRPA' -> generalized RPA with ladder, bubble and mixed diagrams
+        if interaction_model == 'RPA':
+            chic.rpa.calc_vs_q(Nq=Nq,recalc=True)
+            chi_rpa, X, Y = chic.rpa.data_mesh
+            Vmat = chic.rpa.get_vmat(X,Y)
+            # dielectric function
+            epsilon = 1 - chi_rpa*Vmat # elementwise multiplication
+            # effective interaction
+            Wmat = Vmat/epsilon # elementwise division
+            iX = kx - X
+            iY = ky - Y
+            Eall = self.system.get_Eall(iX,iY)
+            vfermi = np.vectorize(self.system.fermiDist)
+            occupMat = vfermi(Eall-self.system.eFermi)
+            # discrete integration
+            # note the elementwise multiplication
+            rsum = -sum(sum(Wmat*occupMat))/iX.size
+            return rsum
+        else:
+            print("GRPA isn't implemented yet. exitting ...")
+            return None
