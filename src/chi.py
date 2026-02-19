@@ -403,7 +403,7 @@ class RPA(Chi):
         self.data_mesh = self.get_rpa(chi0,X,Y)
 
 
-    def rpa_get_critical_value(self, q, prange=(0,3), param='U', plot=False):
+    def get_critical_value(self, q, prange=(0,3), param='U', plot=False):
         """
         get critical value for a system parameter
         indicating a phase boundary.
@@ -856,6 +856,7 @@ class ChiCharge(Chi):
         super().__init__(system)
         self.rpa = RPA(self.system)
         self.grpa = GeneralizedRPA(self.system)
+        self.type = 'Charge'
 
 
 class ChiSpin(Chi):
@@ -865,6 +866,9 @@ class ChiSpin(Chi):
     def __init__(self,system):
         # rename original Chi as ChiCharge for completeness
         super().__init__(system)
+        self.rpa = RPA(self.system)
+        self.grpa = GeneralizedRPA(self.system)
+        self.type = 'Spin'
 
     @staticmethod
     def get_rpa_denominator(chi0, Vmat):
@@ -892,6 +896,7 @@ class ChiCurrent(Chi):
         # inherit everything from default chi
         # modify or add methods when necessary
         super().__init__(system)
+        self.type = 'Current'
 
 
     def run_npool(self,X,Y):
