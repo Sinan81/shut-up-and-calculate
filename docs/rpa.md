@@ -54,7 +54,7 @@ For a given $\mathbf q^*$, a critical parameter value can be determined by plott
 from tba import * ; x = System()
 # assume qstar is pi,pi
 qstar = (np.pi, np.pi)
-x.chis.rpa_get_critical_value(qstar,param='U',plot=True)
+x.chis.rpa.get_critical_value(qstar,param='U',plot=True)
 ```
 giving
 
