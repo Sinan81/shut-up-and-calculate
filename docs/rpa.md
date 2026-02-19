@@ -36,8 +36,8 @@ x = System()
 x.U=1.65
 x.V=0
 x.Vnn=0 # Vprime
-x.chis.calc_rpa_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
-x.chis.plot_vs_q(chi_type='rpa')
+x.chis.rpa.calc_vs_q(Nq=10, plot_zone='Q1', recalc=True, shiftPlot=0)
+x.chis.rpa.plot_vs_q()
 ```
 giving:
 
@@ -131,7 +131,7 @@ x = System()
 x.U=0.5
 x.V=0.5
 x.Vnn=0 # not implemented in gbasis yet, hence set to zero.
-x.chic.plot_vs_q(chi_type='grpa', Nq=8, style='topview')
+x.chic.grpa.plot_vs_q(Nq=8, style='topview')
 ```
 
 Note that in the case of spin susceptibility, only exchange terms contribute. Hence $\tilde V_\rho$ is replaced with $\tilde V_\sigma = \tilde V_X$ 
