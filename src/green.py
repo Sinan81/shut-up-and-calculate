@@ -1,5 +1,8 @@
 import numpy as np
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 class Green():
     """
     Green function
@@ -64,3 +67,57 @@ class Green():
         else:
             print("GRPA isn't implemented yet. exitting ...")
             return None
+
+
+    def plot_selfenerg_along_sym_cuts(self, isSaveFig=False, plot_Emin=-0.2, plot_Emax=0, num=50, Nq=5):
+
+        #veband = np.vectorize(self.Eband)  # vectorize
+        def f(kx,ky):
+            return self.self_energy_static(kx,ky,Nq=Nq)
+
+        vfunc = np.vectorize(f)
+
+        ncuts = len(self.system.crystal.sym_cuts)
+        nplots = ncuts
+        fig, (ax1, ax2, ax3) = plt.subplots(1,nplots)
+        axlist = [ax1, ax2, ax3]
+
+        # make points along the cuts
+        for i in range(0, ncuts):
+            p1,p2 = self.system.crystal.sym_cuts[i]
+            lkx = np.linspace(p1[0], p2[0], num=num)
+            lky = np.linspace(p1[1], p2[1], num=num)
+            ax = axlist[i]
+            ax.axhline(self.system.eFermi, color='k', ls='--')
+            Z = vfunc(lkx,lky)
+            ax.plot(Z)
+
+            ax.set_ylim(plot_Emin,plot_Emax)
+            ax.set_xlim(1,len(lkx)-1)
+            ax.set_xticks([len(lkx)/2],[])
+            # turn off yaxis ticks except for the first plot
+            if i != 0:
+                ax.set_yticks([],[])
+            if i == 0:
+                ax.set_ylabel('Energy (eV)')
+        xg=0.12 ; xx=0.38 ; xm=0.63 ; xgg=0.89
+        # indicate symmetry point labels
+        fig.text(xg, 0.075, r'$\mathbf{\Gamma}$', fontweight='bold')
+        fig.text(xx, 0.075, 'X', fontweight='bold')
+        fig.text(xm, 0.075, 'M', fontweight='bold')
+        fig.text(xgg, 0.075, r'$\mathbf{\Gamma}$', fontweight='bold')
+        # get rid of space between subplots
+        plt.subplots_adjust(wspace=0)
+        # set figure title
+        ttxt=' '.join(self.system.__name__.split('_'))
+        if hasattr(self,'isAFRBZ'):
+            tfill=' (filling='+"{:.2f}".format(self.system.filling)+"/{})".format(self.system.rank/2)
+        else:
+            tfill=' (filling='+"{:.2f}".format(self.system.filling)+"/{})".format(self.system.rank)
+            #tfill=' (filling='+"{:.2f}".format(self.filling)+')'
+        ttxt='static self Energy' #ttxt + tfill
+        fig.text(0.5,0.9, ttxt, horizontalalignment='center')
+        if isSaveFig:
+            plt.savefig(self.__name__ + '_energy_band_cuts.png')
+        plt.show()
+        return fig
