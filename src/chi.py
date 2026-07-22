@@ -87,6 +87,65 @@ class Chi:
         print(r)
         return r
 
+    def real_dyn(self, q, omg):
+        """
+        Real part of zero freq susceptibility integrand
+        """
+        # TODO reduce the number of integrations by using symmetries
+        # a 12x reduction should be possible
+        qx, qy = q
+
+        cell = self.system.crystal
+
+        r = dblquad(
+                lambda kx, ky: self.real_integ_dyn(kx, ky, qx, qy, omg),
+                cell.integ_xmin,
+                cell.integ_xmax,
+                cell.gfun,
+                cell.hfun,
+                # it is ok to comment out the following
+                # we specify this to speed calculations up by 2.5x
+                # when we set epsabs to 0.1, the precision of the results
+                # changed at the most up to third decimal place
+                # consistent with 0.1 divided by normalisation factor 4*pi^2
+                epsabs=0.1,
+            )[0]
+        # normalise
+        r = r / cell.fbz_area
+        print(r)
+        return r
+
+
+    def imag_dyn(self, q, omg):
+        """
+        Real part of zero freq susceptibility integrand
+        """
+        # TODO reduce the number of integrations by using symmetries
+        # a 12x reduction should be possible
+        qx, qy = q
+
+        cell = self.system.crystal
+
+        r = dblquad(
+                lambda kx, ky: self.imag_integ_dyn(kx, ky, qx, qy, omg),
+                cell.integ_xmin,
+                cell.integ_xmax,
+                cell.gfun,
+                cell.hfun,
+                # it is ok to comment out the following
+                # we specify this to speed calculations up by 2.5x
+                # when we set epsabs to 0.1, the precision of the results
+                # changed at the most up to third decimal place
+                # consistent with 0.1 divided by normalisation factor 4*pi^2
+                epsabs=0.1,
+            )[0]
+        # normalise
+        r = r / cell.fbz_area
+        print(r)
+        return r
+
+
+
 
     #@jit()
     def real_integ_static(self, kx, ky, qx, qy):
@@ -103,6 +162,46 @@ class Chi:
             return -self.system.fermiPrime(Ek - eFermi)
         else:
             return -(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
+
+    def real_integ_dyn(self, kx, ky, qx, qy, omg):
+        """
+        Real part of dynamic susceptibility integrand
+        """
+        eFermi: float
+        eFermi = self.system.eFermi
+        Ek = self.system.Eband(kx, ky)
+        Ekq = self.system.Eband(kx + qx, ky + qy)
+        gamma = 0.01 # lorentzian broadenning
+        return np.real(-(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (omg + Ek - Ekq +ic*gamma ) )
+
+
+    def imag_integ_dyn(self, kx, ky, qx, qy, omg):
+        """
+        Imaginary part of dynamic susceptibility integrand
+        """
+        eFermi: float
+        eFermi = self.system.eFermi
+        Ek = self.system.Eband(kx, ky)
+        Ekq = self.system.Eband(kx + qx, ky + qy)
+        gamma = 0.01 # lorentzian broadenning
+        return np.imag(-(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (omg + Ek - Ekq +ic*gamma ))
+
+
+    def calc_bare_dyn(self, q=(np.pi,np.pi), num=10, wmin=-5, wmax=5):
+        lomg = np.linspace(-wmin, wmax, num=num)
+        lqx = np.ones(num)*q[0]
+        lqy = np.ones(num)*q[1]
+        lq = list(zip(lqx, lqy))
+        # now zip X,Y so that we can use pool
+        # multiprocess pools doesn't work with class methods
+        # hence use PPool from pathos module
+        tic = time.perf_counter()
+        with PPool(npool) as p:
+            reZ = p.map(self.real_dyn, _xy, lomg)
+            imZ = p.map(self.imag_dyn, lq, lomg)
+        toc = time.perf_counter()
+        print(f"run time: {toc - tic:.1f} seconds")
+        return (lomg, reZ, imZ)
 
 
     def calc_cuts_bare(self, num):
