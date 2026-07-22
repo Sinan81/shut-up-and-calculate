@@ -47,7 +47,6 @@ ic = complex(0, 1.0)
 
 #kT = 0.01
 
-
 class System:
     def __init__(self, filling=None):
         pass

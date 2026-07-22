@@ -41,6 +41,9 @@ ic = complex(0, 1.0)
 
 #kT = 0.01
 
+# TODO dynamic susceptibility
+# TODO multiband susceptibility
+# TODO adaptive calculation
 
 class Chi:
     """
