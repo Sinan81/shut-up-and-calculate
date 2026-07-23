@@ -44,6 +44,8 @@ ic = complex(0, 1.0)
 # TODO dynamic susceptibility
 # TODO multiband susceptibility
 # TODO adaptive calculation
+# TODO bond susceptibilty
+# TODO spin susceptibility
 
 class Chi:
     """
@@ -163,32 +165,29 @@ class Chi:
         else:
             return -(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (Ek - Ekq)
 
-    def real_integ_dyn(self, kx, ky, qx, qy, omg):
+
+    def integ_dyn(self, kx, ky, qx, qy, omg):
         """
-        Real part of dynamic susceptibility integrand
+        dynamic susceptibility integrand
         """
         eFermi: float
         eFermi = self.system.eFermi
         Ek = self.system.Eband(kx, ky)
         Ekq = self.system.Eband(kx + qx, ky + qy)
-        gamma = 0.01 # lorentzian broadenning
-        return np.real(-(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (omg + Ek - Ekq +ic*gamma ) )
+        gamma = 0.05 # lorentzian broadenning should be at least a few times biggen that omega resolution
+        return -(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (omg + Ek - Ekq +ic*gamma )
+
+
+    def real_integ_dyn(self, kx, ky, qx, qy, omg):
+        return np.real(self.integ_dyn(kx, ky, qx, qy, omg))
 
 
     def imag_integ_dyn(self, kx, ky, qx, qy, omg):
-        """
-        Imaginary part of dynamic susceptibility integrand
-        """
-        eFermi: float
-        eFermi = self.system.eFermi
-        Ek = self.system.Eband(kx, ky)
-        Ekq = self.system.Eband(kx + qx, ky + qy)
-        gamma = 0.01 # lorentzian broadenning
-        return np.imag(-(self.system.fermiDist(Ek - eFermi) - self.system.fermiDist(Ekq - eFermi)) / (omg + Ek - Ekq +ic*gamma ))
+        return np.imag(self.integ_dyn(kx, ky, qx, qy, omg))
 
 
     def calc_bare_dyn(self, q=(np.pi,np.pi), num=10, wmin=-5, wmax=5):
-        lomg = np.linspace(-wmin, wmax, num=num)
+        lomg = np.linspace(wmin, wmax, num=num)
         lqx = np.ones(num)*q[0]
         lqy = np.ones(num)*q[1]
         lq = list(zip(lqx, lqy))
@@ -197,7 +196,7 @@ class Chi:
         # hence use PPool from pathos module
         tic = time.perf_counter()
         with PPool(npool) as p:
-            reZ = p.map(self.real_dyn, _xy, lomg)
+            reZ = p.map(self.real_dyn, lq, lomg)
             imZ = p.map(self.imag_dyn, lq, lomg)
         toc = time.perf_counter()
         print(f"run time: {toc - tic:.1f} seconds")
